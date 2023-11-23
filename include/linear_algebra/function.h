@@ -33,6 +33,10 @@ public:
         Number<T> result = func();
         return result;
     }
+
+    void set_variables(const std::vector<Number<T>>& vars) {
+        variables = vars;
+    }
 };
 
 } // namespace ln

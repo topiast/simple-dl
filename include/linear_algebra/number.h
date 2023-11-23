@@ -108,7 +108,19 @@ public:
 
     Number& pow(const Number& rhs) {
         if (count_gradient) {
-            m_gradient = m_gradient * rhs.m_value * std::pow(m_value, rhs.m_value - 1) + m_value * rhs.m_gradient * std::pow(m_value, rhs.m_value);
+            m_gradient = m_gradient * rhs.m_value * std::pow(m_value, rhs.m_value - 1); 
+        }
+
+        m_value = std::pow(m_value, rhs.m_value);
+
+        return *this;
+    }
+
+    // this function is used to calculate gradient of x ^ y, but gradient is relative to y
+    Number& pow_inv_for_grad(const Number& rhs) {
+        // here x is m_value, y is rhs.m_value
+        if (count_gradient) {
+            m_gradient = std::pow(m_value, rhs.m_value) * std::log(rhs.m_value) * rhs.m_gradient; // x ^ y * ln(y) * y' ??? should be x ^ y * ln(x) * y' ???
         }
 
         m_value = std::pow(m_value, rhs.m_value);
@@ -214,16 +226,54 @@ public:
     Number operator-() const { return Number(-m_value); }
     Number operator~() const { return Number(~m_value); }
 
-    Number operator+(const Number& rhs) const { return Number(*this) += rhs; }
-    Number operator-(const Number& rhs) const { return Number(*this) -= rhs; }
-    Number operator*(const Number& rhs) const { return Number(*this) *= rhs; }
-    Number operator/(const Number& rhs) const { return Number(*this) /= rhs; }
-    Number operator%(const Number& rhs) const { return Number(*this) %= rhs; }
-    Number operator&(const Number& rhs) const { return Number(*this) &= rhs; }
-    Number operator|(const Number& rhs) const { return Number(*this) |= rhs; }
-    Number operator^(const Number& rhs) const { return Number(*this) ^= rhs; }
-    Number operator<<(const Number& rhs) const { return Number(*this) <<= rhs; }
-    Number operator>>(const Number& rhs) const { return Number(*this) >>= rhs; }
+    Number operator+(const Number& rhs) const { 
+        Number result = Number(*this) += rhs;
+        return result; 
+        }
+    Number operator-(const Number& rhs) const {
+        Number result = Number(*this) -= rhs;
+        return result; 
+        }
+    Number operator*(const Number& rhs) const {
+        Number result = Number(*this) *= rhs;
+        return result; 
+        }
+    Number operator/(const Number& rhs) const {
+        Number result = Number(*this) /= rhs;
+        return result; 
+        }
+    Number operator%(const Number& rhs) const {
+        Number result = Number(*this) %= rhs;
+        return result; 
+        }
+    Number operator&(const Number& rhs) const {
+        Number result = Number(*this) &= rhs;
+        return result; 
+        }
+    Number operator|(const Number& rhs) const {
+        Number result = Number(*this) |= rhs;
+        return result; 
+        }
+    Number operator^(const Number& rhs) const {
+        Number result = Number(*this) ^= rhs;
+        return result; 
+        }
+    Number operator<<(const Number& rhs) const {
+        Number result = Number(*this) <<= rhs;
+        return result; 
+        }
+    Number operator>>(const Number& rhs) const {
+        Number result = Number(*this) >>= rhs;
+        return result; 
+        }
+
+    // copy assignment
+    Number& operator=(const Number& rhs) {
+        // std::cout << "copy assignment" << std::endl;
+        m_value = rhs.m_value;
+        m_gradient = rhs.m_gradient;
+        return *this;
+    }
 
 
 
@@ -253,33 +303,41 @@ public:
 
 
 template <typename T>
-Number<T> abs(Number<T>& x) {
-    return x.abs();
+Number<T> abs(const Number<T>& x) {
+    // copy x
+    Number<T> result = x;
+    return result.abs();
 }
 
 template <typename T>
-Number<T> pow(Number<T>& x, Number<T>& y) {
-    return x.pow(y);
+Number<T> pow(const Number<T>& x, const Number<T>& y) {
+    Number<T> result = x;
+
+    return y.gradient() == 0 ? result.pow(y) : result.pow_inv_for_grad(y) ;
 }
 
 template <typename T>
-Number<T> sqrt(Number<T>& x) {
-    return x.sqrt();
+Number<T> sqrt(const Number<T>& x) {
+    Number<T> result = x;
+    return result.sqrt();
 }
 
 template <typename T>
-Number<T> exp(Number<T>& x) {
-    return x.exp();
+Number<T> exp(const Number<T>& x) {
+    Number<T> result = x;
+    return result.exp();
 }
 
 template <typename T>
-Number<T> log(Number<T>& x) {
-    return x.log();
+Number<T> log(const Number<T>& x) {
+    Number<T> result = x;
+    return result.log();
 }
 
 template <typename T>
-Number<T> log10(Number<T>& x) {
-    return x.log10();
+Number<T> log10(const Number<T>& x) {
+    Number<T> result = x;
+    return result.log10();
 }
 
 } // namespace ln
