@@ -18,10 +18,12 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # Create the example executable
 add_executable(gradients examples/gradients.cpp)
 add_executable(tensor examples/tensor.cpp)
+add_executable(linear examples/linear.cpp)
 
 # Link the library to the executable
 target_link_libraries(gradients PRIVATE linear_algebra)
 target_link_libraries(tensor PRIVATE linear_algebra)
+target_link_libraries(linear PRIVATE linear_algebra)
 
 # Add the test executable
 add_executable(test_gradients tests/test_gradients.cpp)

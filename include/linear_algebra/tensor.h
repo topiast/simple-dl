@@ -36,7 +36,8 @@ class Tensor {
         return *this;
     }
 
-    Tensor& operator+(const Tensor& rhs) const {
+
+    Tensor operator+(const Tensor& rhs) const {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for addition");
         }
@@ -52,7 +53,7 @@ class Tensor {
         return result;
     }
 
-    Tensor& operator-(const Tensor& rhs) const {
+    Tensor operator-(const Tensor& rhs) const {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for subtraction");
         }
@@ -278,17 +279,21 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = pow(result.m_data[i], exponent);
+            result.m_data[i] = std::pow(result.m_data[i], exponent);
         }
 
         return result;
     }
 
 
-    std::vector<int>& get_shape() {
+    const std::vector<int>& get_shape() const {
         return m_shape;
 
     };
+
+    const size_t get_size() const {
+        return m_data.size();
+    }
 
     std::vector<T>& get_values() {
         return m_data;
