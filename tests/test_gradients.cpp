@@ -7,13 +7,17 @@
 using Number = ln::Number<float>;
 
 TEST(TestGradients, TestFunctionValuesAndGradients) {
-    std::vector<Number> variables;
-    variables.push_back(1);
-    variables.push_back(2);
-    variables.push_back(3);
+    std::vector<Number*> variables;
+    Number a = 1;
+    Number b = 2;
+    Number c = 3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
 
     ln::Function<float> func(variables, [&variables]() {
-        return variables[0] * variables[1] + variables[2] * 2; // 1 * 2 + 3 * 2 = 8
+        return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
     });
 
     // vector of expected function gradients
@@ -33,13 +37,18 @@ TEST(TestGradients, TestFunctionValuesAndGradients) {
 }
 // test division
 TEST(TestGradients, TestFunctionValuesAndGradientsDivision) {
-    std::vector<Number> variables;
-    variables.push_back(1);
-    variables.push_back(2);
-    variables.push_back(3);
+    std::vector<Number*> variables;
+
+    Number a = 1;
+    Number b = 2;
+    Number c = 3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
 
     ln::Function<float> func(variables, [&variables]() {
-        return variables[0] / variables[1] + variables[2] * 2; // 1 / 2 + 3 * 2 = 6.5
+        return (*variables[0]) / (*variables[1]) + (*variables[2]) * 2; // 1 / 2 + 3 * 2 = 6.5
     });
 
     // vector of expected function gradients
@@ -65,15 +74,19 @@ TEST(TestGradients, TestFunctionValuesAndGradientsPower) {
     x2 = rand() % 10;
     x3 = rand() % 10;
 
-    std::vector<Number> variables;
-    variables.push_back(x1);
-    variables.push_back(x2);
-    variables.push_back(x3);
+    std::vector<Number*> variables;
+    
+    Number a = x1;
+    Number b = x2;
+    Number c = x3;
 
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
     
 
     ln::Function<float> func(variables, [&variables]() {
-        return ln::pow(variables[0], variables[1]) + variables[2] * 2; 
+        return ln::pow((*variables[0]), (*variables[1])) + (*variables[2]) * 2; 
     });
 
     // vector of expected function gradients
@@ -99,13 +112,17 @@ TEST(TestGradients, TestFunctionValuesAndGradientsPower) {
 }
 // test sqrt
 TEST(TestGradients, TestFunctionValuesAndGradientsSqrt) {
-    std::vector<Number> variables;
-    variables.push_back(1);
-    variables.push_back(2);
-    variables.push_back(3);
+    std::vector<Number*> variables;
+    Number a = 1;
+    Number b = 2;
+    Number c = 3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
 
     ln::Function<float> func(variables, [&variables]() {
-        return ln::sqrt(variables[0]) + variables[2] * 2; // sqrt(1) + 3 * 2 = 7
+        return ln::sqrt((*variables[0])) + (*variables[2]) * 2; // sqrt(1) + 3 * 2 = 7
     });
 
     // vector of expected function gradients
@@ -125,13 +142,17 @@ TEST(TestGradients, TestFunctionValuesAndGradientsSqrt) {
 
 // test abs
 TEST(TestGradients, TestFunctionValuesAndGradientsAbs) {
-    std::vector<Number> variables;
-    variables.push_back(1);
-    variables.push_back(2);
-    variables.push_back(3);
+    std::vector<Number*> variables;
+    Number a = 1;
+    Number b = 2;
+    Number c = 3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
 
     ln::Function<float> func(variables, [&variables]() {
-        return ln::abs(variables[0]) + variables[2] * 2; // abs(1) + 3 * 2 = 7
+        return ln::abs((*variables[0])) + (*variables[2]) * 2; // abs(1) + 3 * 2 = 7
     });
 
     // vector of expected function gradients
@@ -158,13 +179,18 @@ TEST(TestGradients, TestFunctionValuesAndGradientsLn) {
     x2 = rand() % 10;
     x3 = rand() % 10;
 
-    std::vector<Number> variables;
-    variables.push_back(x1);
-    variables.push_back(x2);
-    variables.push_back(x3);
+    std::vector<Number*> variables;
+    
+    Number a = x1;
+    Number b = x2;
+    Number c = x3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
 
     ln::Function<float> func(variables, [&variables]() {
-        return ln::log(variables[0]) + variables[2] * 2; // ln(1) + 3 * 2 = 7
+        return ln::log((*variables[0])) + (*variables[2]) * 2; // ln(1) + 3 * 2 = 7
     });
 
     // vector of expected function gradients
@@ -195,14 +221,19 @@ TEST(TestGradients, TestFunctionValuesAndGradientsComplicated) {
     // std::cout << "x2: " << x2 << std::endl;
     // std::cout << "x3: " << x3 << std::endl;
 
-    std::vector<Number> variables;
-    variables.push_back(x1);
-    variables.push_back(x2);
-    variables.push_back(x3);
+    std::vector<Number*> variables;
+    
+    Number a = x1;
+    Number b = x2;
+    Number c = x3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
 
     ln::Function<float> func(variables, [&variables]() {
 
-        return ln::pow(variables[0], variables[1]) + ln::sqrt(variables[2]) * 2; // 2^3 + sqrt(4) * 2 = 14
+        return ln::pow((*variables[0]), (*variables[1])) + ln::sqrt((*variables[2])) * 2; // 2^3 + sqrt(4) * 2 = 14
     });
 
     // vector of expected function gradients

@@ -16,19 +16,27 @@ find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Create the example executable
-add_executable(example examples/gradients.cpp)
+add_executable(gradients examples/gradients.cpp)
+add_executable(tensor examples/tensor.cpp)
 
 # Link the library to the executable
-target_link_libraries(example PRIVATE linear_algebra)
+target_link_libraries(gradients PRIVATE linear_algebra)
+target_link_libraries(tensor PRIVATE linear_algebra)
 
 # Add the test executable
 add_executable(test_gradients tests/test_gradients.cpp)
+add_executable(test_tensors tests/test_tensors.cpp)
 
 # Link the library and Google Test to the test executable
 target_link_libraries(test_gradients PRIVATE linear_algebra GTest::GTest GTest::Main)
+target_link_libraries(test_tensors PRIVATE linear_algebra GTest::GTest GTest::Main)
 
 # Add the test to CTest
 add_test(
-    NAME TestGradients
+    NAME test_gradients
     COMMAND test_gradients
+)
+add_test(
+    NAME test_tensors
+    COMMAND test_tensors
 )
