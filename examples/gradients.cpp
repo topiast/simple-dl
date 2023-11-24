@@ -9,17 +9,23 @@ using Number = ln::Number<float>;
 
 
 int main() {
-    std::vector<Number> variables;
-    variables.push_back(1);
-    variables.push_back(2);
-    variables.push_back(3);
+    std::cout << "Testing gradients: " << std::endl;
+    std::vector<Number*> variables;
+    Number a = 1;
+    Number b = 2;
+    Number c = 3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
 
     ln::Function<float> func(variables, [&variables]() {
-        return variables[0] * variables[1] + variables[2] * 2; // 1 * 2 + 3 * 2 = 8
+        return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
     });
 
     for (int i = 0; i < variables.size(); i++) {
-        Number result = func.derivative(variables[i]);
+        Number *var = variables[i];
+        Number result = func.derivative(var);
         std::cout << "Result for variable " << i << ": " << result.value() << std::endl;
         std::cout << "Gradient for variable " << i << ": " << result.gradient() << std::endl;
     }
