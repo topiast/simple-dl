@@ -38,16 +38,29 @@ class Tensor {
 
 
     Tensor operator+(const Tensor& rhs) const {
-        if (m_shape != rhs.m_shape) {
+        // make sure the size of the last dimension is the same
+        if (m_shape.back() != rhs.m_shape.back()) {
             throw std::invalid_argument("Incompatible shapes for addition");
         }
 
         Tensor result;
         result.m_shape = m_shape;
-        result.m_data = m_data;
+        result.m_shape.pop_back();
+        result.m_shape.insert(result.m_shape.end(), rhs.m_shape.begin(), rhs.m_shape.end());
+        result.m_data = std::vector<T>(result.m_shape[0] * result.m_shape[1], T(0));
 
-        for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] += rhs.m_data[i];
+        int stride = 1;
+        for (int i = m_shape.size() - 1; i > 0; --i) {
+            stride *= m_shape[i];
+        }
+
+        for (int i = 0; i < m_data.size(); ++i) {
+            result.m_data[(i / stride) % result.m_shape[0]] += m_data[i];
+        }
+
+
+        for (int i = 0; i < rhs.m_data.size(); ++i) {
+            result.m_data[(i / stride) % result.m_shape[0]] += rhs.m_data[i];
         }
 
         return result;
@@ -140,6 +153,7 @@ class Tensor {
 
         return *this;
     }
+
 
     Tensor operator+(T rhs) const {
         Tensor result;

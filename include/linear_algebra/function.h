@@ -26,6 +26,7 @@ public:
         for (auto& var : variables) {
             if (var == variable) {
                 var->set_gradient(1); // Dereference the pointer to access the object
+                // std::cout << "Variable " << var << " gradient set to 1" << std::endl;
             } else {
                 var->set_gradient(0); // Dereference the pointer to access the object
             }

@@ -10,6 +10,8 @@ using Number = ln::Number<float>;
 using Tensor = ln::Tensor<Number>;
 using Function = ln::Function<float>;
 
+namespace ml {
+
 class Linear {
 private:
     Tensor weights;
@@ -34,43 +36,61 @@ public:
     }
 
     void fit(const Tensor& input, const Tensor& target, int epochs, float learning_rate) {
-        for (int i = 0; i < epochs; i++) {
-            Tensor output = forward(input);
-            Tensor loss = output - target;
 
-            // combine weights and bias into one vector of pointers
-            std::vector<Number*> parameters;
-            parameters.reserve(weights.get_values().size() + bias.get_values().size());
-            for (auto& w : weights.get_values()) {
-                parameters.push_back(&w);
-            }
-            for (auto& b : bias.get_values()) {
-                parameters.push_back(&b);
-            }
-            
+        // combine weights and bias into one vector of pointers
+        std::vector<Number*> parameters;
+        parameters.reserve(weights.get_values().size() + bias.get_values().size());
+        for (auto& w : weights.get_values()) {
+            parameters.push_back(&w);
+        }
+        for (auto& b : bias.get_values()) {
+            parameters.push_back(&b);
+        }
 
-            Function loss_func(parameters, [&output, &target]() {
-                return (output - target).pow(2).sum();
-            });
+        // // print parameters
+        // for (auto& p : parameters) {
+        //     std::cout << p << std::endl;
+        // }
+
+
+
+        Function loss_func(parameters, [this, &input, &target]() {
+            // mean squared error
+            // (1 / n) * (y - y_hat)^2
+            return (forward(input) - target).pow(2).sum() / input.get_shape()[0];
+        });
+        
+        for (int e = 0; e < epochs; e++) {
+            Number loss(0);
 
             std::vector<Number> gradients_weights;
             for (int i = 0; i < weights.get_size(); i++) {
+
                 Number result = loss_func.derivative(parameters[i]);
                 gradients_weights.push_back(result.gradient());
+                // printf("Gradient for parameter %d: %f\n", i, result.gradient());
+                loss += result;
             }
             //for biases
             std::vector<Number> gradients_bias;
-            for (int i = bias.get_size(); i < parameters.size(); i++) {
+            for (int i = weights.get_size(); i < parameters.size(); i++) {
                 Number result = loss_func.derivative(parameters[i]);
                 gradients_bias.push_back(result.gradient());
             }
+
             Tensor gradients_weights_tensor(gradients_weights, weights.get_shape());
             Tensor gradients_bias_tensor(gradients_bias, bias.get_shape());
 
-            weights = weights - gradients_weights_tensor * learning_rate;
-            bias = bias - gradients_bias_tensor * learning_rate;
+            // gradients_weights_tensor.print();
 
-            std::cout << "Epoch: " << i << " Loss: " << loss.sum() / loss.get_size() << std::endl;
+            weights -= gradients_weights_tensor * learning_rate;
+            bias -= gradients_bias_tensor * learning_rate;
+
+            // weights.print();
+
+            std::cout << "Epoch: " << e << " Loss: " << loss / input.get_shape()[0] << std::endl;
         }
     }
 };
+
+}  // namespace ml

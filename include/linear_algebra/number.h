@@ -357,4 +357,36 @@ namespace std {
             return lhs.get_id() == rhs.get_id();
         }
     };
+
+    // pow function for Number
+    template <typename T>
+    ln::Number<T> pow(const ln::Number<T>& x, const ln::Number<T>& y) {
+        return ln::pow(x, y);
+    }
+
+    // sqrt function for Number
+    template <typename T>
+    ln::Number<T> sqrt(const ln::Number<T>& x) {
+        return ln::sqrt(x);
+    }
+
+    // exp function for Number
+    template <typename T>
+    ln::Number<T> exp(const ln::Number<T>& x) {
+        return ln::exp(x);
+    }
+
+    // log function for Number
+    template <typename T>
+    ln::Number<T> log(const ln::Number<T>& x) {
+        return ln::log(x);
+    }
+
+    // log10 function for Number
+    template <typename T>
+    ln::Number<T> log10(const ln::Number<T>& x) {
+        return ln::log10(x);
+    }
+
+
 } // namespace std

@@ -4,39 +4,79 @@
 
 #include <iostream>
 
+using Number = ln::Number<float>;
+using Tensor = ln::Tensor<Number>;
+using Linear = ml::Linear;
+
+// create some linear function
+// returns a vector of 3 numbers
+Tensor some_linear_function(Number y) {
+    y.set_count_gradient(false);
+
+    Tensor result;
+    result.ones({3});
+
+    result.set_values(0, {y /2});
+    result.set_values(1, {y});
+    result.set_values(2, {y /6});
+
+
+    return result;
+    
+}
+
 
 int main() {
-    //create tensor
-    ln::Tensor<int> tensor1, tensor2, result;
-    tensor1.ones({2, 3});  // Example tensor with shape 2x3 filled with ones
-    tensor2.ones({3, 2});  // Example tensor with shape 3x2 filled with ones
+    //create mock data tensor
+    Tensor X, Y;
+    X.ones({10, 3});  // Example tensor with shape 4x3 filled with ones
+    Y.ones({10, 1});  // Example tensor with shape 4x3 filled with ones
 
-    // [[2, 5, 3]
-    // [[3, 6, 2]
-    
-    // [[3, 5]
-    // [[1, 4]
-    // [[3, 1]]
+    for(int i = 0; i < X.get_shape()[0]; i++) {
+        X.set_values(i, some_linear_function(i).get_values());
+        Y.set_values(i, {i});
+    }
 
-    // result should be 
-    //[[20 33]
-    //[21 41]]
+    // print X
+    std::cout << "Data set: " << std::endl;
+    X.print();
 
-    // assign values to tensor1
-    tensor1.set_values(0,{1, 2, 3});
-    tensor1.set_values(1,{4, 5, 6});
+    // print Y
+    std::cout << "Target: " << std::endl;
+    Y.print();
 
-    // assign values to tensor2
-    tensor2.set_values(0,{1, 2});
-    tensor2.set_values(1,{3, 4});
-    tensor2.set_values(2,{5, 6});
+    Linear linear(3, 1);
 
-    // print tensor1
-    std::cout << "Tensor1: " << std::endl;
-    tensor1.print();
+    // print weights
+    std::cout << "Weights: " << std::endl;
+    linear.get_weights().print();
 
-    // print tensor2
-    std::cout << "Tensor2: " << std::endl;
-    tensor2.print();
+    // print bias
+    std::cout << "Bias: " << std::endl;
+    linear.get_bias().print();
+
+    // print output
+    std::cout << "Output: " << std::endl;
+    linear.forward(X).print();
+
+    // fit the model
+    linear.fit(X, Y, 1000, 0.01);
+
+    // print weights
+    std::cout << "Weights: " << std::endl;
+    linear.get_weights().print();
+
+    // print bias
+    std::cout << "Bias: " << std::endl;
+    linear.get_bias().print();
+
+    // print output
+
+    std::cout << "Output: " << std::endl;
+    linear.forward(X).print();
+
+    return 0;
+
+
 
 }
