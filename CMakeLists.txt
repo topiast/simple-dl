@@ -28,10 +28,12 @@ target_link_libraries(linear PRIVATE linear_algebra)
 # Add the test executable
 add_executable(test_gradients tests/test_gradients.cpp)
 add_executable(test_tensors tests/test_tensors.cpp)
+add_executable(test_linear tests/test_linear.cpp)
 
 # Link the library and Google Test to the test executable
 target_link_libraries(test_gradients PRIVATE linear_algebra GTest::GTest GTest::Main)
 target_link_libraries(test_tensors PRIVATE linear_algebra GTest::GTest GTest::Main)
+target_link_libraries(test_linear PRIVATE linear_algebra GTest::GTest GTest::Main)
 
 # Add the test to CTest
 add_test(
@@ -41,4 +43,8 @@ add_test(
 add_test(
     NAME test_tensors
     COMMAND test_tensors
+)
+add_test(
+    NAME test_linear
+    COMMAND test_linear
 )

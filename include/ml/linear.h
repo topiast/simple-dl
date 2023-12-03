@@ -35,7 +35,7 @@ public:
         return bias;
     }
 
-    void fit(const Tensor& input, const Tensor& target, int epochs, float learning_rate) {
+    void fit(const Tensor& input, const Tensor& target, int epochs, float learning_rate, bool print_loss = true) {
 
         // combine weights and bias into one vector of pointers
         std::vector<Number*> parameters;
@@ -89,8 +89,9 @@ public:
             weights -= gradients_weights_tensor * learning_rate;
             bias -= gradients_bias_tensor * learning_rate;
 
-
-            std::cout << "Epoch: " << e << " Loss: " << loss / input.get_shape()[0] << std::endl;
+            if (print_loss) {
+                std::cout << "Epoch: " << e << " Loss: " << loss / input.get_shape()[0] << std::endl;
+            }
         }
     }
 };
