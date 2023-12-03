@@ -222,50 +222,70 @@ public:
         return tmp;
     }
 
-    Number operator+() const { return *this; }
-    Number operator-() const { return Number(-m_value); }
-    Number operator~() const { return Number(~m_value); }
+    Number operator+() const { 
+        Number result = Number(*this);
+        return result; 
+        }
+    Number operator-() const {
+        Number result = Number(*this);
+        if (count_gradient) {
+            result.m_gradient = -result.m_gradient;
+        }
+
+        result.m_value = -result.m_value;
+        return result; 
+    }
 
     Number operator+(const Number& rhs) const { 
         Number result = Number(*this) += rhs;
         return result; 
-        }
+    }
     Number operator-(const Number& rhs) const {
         Number result = Number(*this) -= rhs;
         return result; 
-        }
+    }
     Number operator*(const Number& rhs) const {
         Number result = Number(*this) *= rhs;
         return result; 
-        }
+    }
     Number operator/(const Number& rhs) const {
         Number result = Number(*this) /= rhs;
         return result; 
-        }
+    }
     Number operator%(const Number& rhs) const {
         Number result = Number(*this) %= rhs;
         return result; 
-        }
+    }
     Number operator&(const Number& rhs) const {
         Number result = Number(*this) &= rhs;
         return result; 
-        }
+    }
     Number operator|(const Number& rhs) const {
         Number result = Number(*this) |= rhs;
         return result; 
-        }
+    }
     Number operator^(const Number& rhs) const {
         Number result = Number(*this) ^= rhs;
         return result; 
-        }
+    }
     Number operator<<(const Number& rhs) const {
         Number result = Number(*this) <<= rhs;
         return result; 
-        }
+    }
     Number operator>>(const Number& rhs) const {
         Number result = Number(*this) >>= rhs;
         return result; 
-        }
+    }
+    bool operator<(const Number& rhs) const { return m_value < rhs.m_value; }
+    bool operator>(const Number& rhs) const { return m_value > rhs.m_value; }
+    bool operator<=(const Number& rhs) const { return m_value <= rhs.m_value; }
+    bool operator>=(const Number& rhs) const { return m_value >= rhs.m_value; }
+    bool operator==(const Number& rhs) const { return m_value == rhs.m_value; }
+    bool operator!=(const Number& rhs) const { return m_value != rhs.m_value; }
+    bool operator&&(const Number& rhs) const { return m_value && rhs.m_value; }
+    bool operator||(const Number& rhs) const { return m_value || rhs.m_value; }
+    bool operator!() const { return !m_value; }
+    bool operator~() const { return ~m_value; }
 
     // copy assignment
     Number& operator=(const Number& rhs) {

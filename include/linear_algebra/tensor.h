@@ -215,6 +215,18 @@ class Tensor {
         return *this;
     }
 
+    Tensor operator-() const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            result.m_data[i] = -result.m_data[i];
+        }
+
+        return result;
+    }
+
 
     Tensor matmul(const Tensor& rhs) const {
         if (m_shape.size() != 2 || rhs.m_shape.size() != 2) {
@@ -294,6 +306,22 @@ class Tensor {
 
         for (size_t i = 0; i < m_data.size(); ++i) {
             result.m_data[i] = std::pow(result.m_data[i], exponent);
+        }
+
+        return result;
+    }
+
+    Tensor clip(T min, T max) const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            if (result.m_data[i] < min) {
+                result.m_data[i] = min;
+            } else if (result.m_data[i] > max) {
+                result.m_data[i] = max;
+            }
         }
 
         return result;

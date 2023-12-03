@@ -212,7 +212,7 @@ TEST(TestGradients, TestFunctionValuesAndGradientsComplicated) {
     // variables
     float x1, x2, x3;
     // create random integers
-    x1 = rand() % 10;
+    x1 = -(rand() % 10);
     x2 = rand() % 10;
     x3 = rand() % 10;
 

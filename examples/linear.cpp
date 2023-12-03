@@ -16,9 +16,9 @@ Tensor some_linear_function(Number y) {
     Tensor result;
     result.ones({3});
 
-    result.set_values(0, {y /2});
-    result.set_values(1, {y});
-    result.set_values(2, {y /6});
+    result.set_values(0, {y * 2});
+    result.set_values(1, {y/3});
+    result.set_values(2, {y * 7});
 
 
     return result;

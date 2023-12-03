@@ -81,12 +81,14 @@ public:
             Tensor gradients_weights_tensor(gradients_weights, weights.get_shape());
             Tensor gradients_bias_tensor(gradients_bias, bias.get_shape());
 
-            // gradients_weights_tensor.print();
+            // clip gradients to prevent exploding gradients
+            gradients_weights_tensor = gradients_weights_tensor.clip(-1, 1);
+            gradients_bias_tensor = gradients_bias_tensor.clip(-1, 1);
+
 
             weights -= gradients_weights_tensor * learning_rate;
             bias -= gradients_bias_tensor * learning_rate;
 
-            // weights.print();
 
             std::cout << "Epoch: " << e << " Loss: " << loss / input.get_shape()[0] << std::endl;
         }
