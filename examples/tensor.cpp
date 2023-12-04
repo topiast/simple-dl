@@ -1,15 +1,15 @@
-#include "linear_algebra/number.h"
-#include "linear_algebra/function.h"
-#include "linear_algebra/tensor.h"
+#include "math/number.h"
+#include "math/function.h"
+#include "math/tensor.h"
 #include <iostream>
 #include <vector>
 
-using Number = ln::Number<float>;
+using Number = sdlm::Number<float>;
 
 
 int main() {
     //create tensor
-    ln::Tensor<int> tensor1, tensor2, result;
+    sdlm::Tensor<int> tensor1, tensor2, result;
     tensor1.ones({2, 3});  // Example tensor with shape 2x3 filled with ones
     tensor2.ones({3, 2});  // Example tensor with shape 3x2 filled with ones
 
@@ -54,7 +54,7 @@ int main() {
     std::cout << "Testing 3d tensors: " << std::endl;
 
     // now test with 3d tensors
-    ln::Tensor<int> tensor3, tensor4, result2;
+    sdlm::Tensor<int> tensor3, tensor4, result2;
     tensor3.ones({2, 3, 2});  // Example tensor with shape 2x3x2 filled with ones
     tensor4.ones({2, 2, 3});  // Example tensor with shape 2x2x3 filled with ones
 

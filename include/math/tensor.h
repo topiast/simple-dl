@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 
-namespace ln {
+namespace sdlm {
 
 template <typename T>
 class Tensor {
@@ -443,4 +443,4 @@ class Tensor {
 };
 
     
-} // namespace ln
+} // namespace sdlm

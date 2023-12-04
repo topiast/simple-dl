@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "linear_algebra/tensor.h"
+#include "math/tensor.h"
 
 // Test case for tensor product operation
 TEST(TensorTest, TensorProduct) {
-    ln::Tensor<int> tensor1, tensor2, result;
+    sdlm::Tensor<int> tensor1, tensor2, result;
 
     // Create two tensors
     tensor1.ones({2, 3});  // Example tensor with shape 2x3 filled with ones
@@ -32,7 +32,7 @@ TEST(TensorTest, TensorProduct) {
 
 // Test case for tensor transpose operation
 TEST(TensorTest, TensorTranspose) {
-    ln::Tensor<int> tensor1, result;
+    sdlm::Tensor<int> tensor1, result;
 
     // Create a tensor
     tensor1.ones({2, 3});  // Example tensor with shape 2x3 filled with ones

@@ -1,0 +1,8 @@
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/gradients.dir
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/tensor.dir
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/linear.dir
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/test_gradients.dir
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/test_tensors.dir
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/test_linear.dir
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/edit_cache.dir
+/Users/topiast/code/cpp/simple-dl/CMakeFiles/rebuild_cache.dir

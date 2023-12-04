@@ -5,7 +5,7 @@
 // to get random id
 #include <random>
 
-namespace ln {
+namespace sdlm {
 
 template <typename T>
 class Number {
@@ -120,7 +120,7 @@ public:
     Number& pow_inv_for_grad(const Number& rhs) {
         // here x is m_value, y is rhs.m_value
         if (count_gradient) {
-            m_gradient = std::pow(m_value, rhs.m_value) * std::log(rhs.m_value) * rhs.m_gradient; // x ^ y * ln(y) * y' ??? should be x ^ y * ln(x) * y' ???
+            m_gradient = std::pow(m_value, rhs.m_value) * std::log(rhs.m_value) * rhs.m_gradient; // x ^ y * sdlm(y) * y' ??? should be x ^ y * sdlm(x) * y' ???
         }
 
         m_value = std::pow(m_value, rhs.m_value);
@@ -360,52 +360,52 @@ Number<T> log10(const Number<T>& x) {
     return result.log10();
 }
 
-} // namespace ln
+} // namespace sdlm
 
 // hash function for Number
 namespace std {
     template <typename T>
-    struct hash<ln::Number<T>> {
-        std::size_t operator()(const ln::Number<T>& number) const {
+    struct hash<sdlm::Number<T>> {
+        std::size_t operator()(const sdlm::Number<T>& number) const {
             // since id is unique, we can use it as hash
             return number.get_id();
         }
     };
     template <typename T>
-    struct equal_to<ln::Number<T>> {
-        bool operator()(const ln::Number<T>& lhs, const ln::Number<T>& rhs) const {
+    struct equal_to<sdlm::Number<T>> {
+        bool operator()(const sdlm::Number<T>& lhs, const sdlm::Number<T>& rhs) const {
             return lhs.get_id() == rhs.get_id();
         }
     };
 
     // pow function for Number
     template <typename T>
-    ln::Number<T> pow(const ln::Number<T>& x, const ln::Number<T>& y) {
-        return ln::pow(x, y);
+    sdlm::Number<T> pow(const sdlm::Number<T>& x, const sdlm::Number<T>& y) {
+        return sdlm::pow(x, y);
     }
 
     // sqrt function for Number
     template <typename T>
-    ln::Number<T> sqrt(const ln::Number<T>& x) {
-        return ln::sqrt(x);
+    sdlm::Number<T> sqrt(const sdlm::Number<T>& x) {
+        return sdlm::sqrt(x);
     }
 
     // exp function for Number
     template <typename T>
-    ln::Number<T> exp(const ln::Number<T>& x) {
-        return ln::exp(x);
+    sdlm::Number<T> exp(const sdlm::Number<T>& x) {
+        return sdlm::exp(x);
     }
 
     // log function for Number
     template <typename T>
-    ln::Number<T> log(const ln::Number<T>& x) {
-        return ln::log(x);
+    sdlm::Number<T> log(const sdlm::Number<T>& x) {
+        return sdlm::log(x);
     }
 
     // log10 function for Number
     template <typename T>
-    ln::Number<T> log10(const ln::Number<T>& x) {
-        return ln::log10(x);
+    sdlm::Number<T> log10(const sdlm::Number<T>& x) {
+        return sdlm::log10(x);
     }
 
 

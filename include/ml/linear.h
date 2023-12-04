@@ -1,16 +1,16 @@
 #pragma once
 
-#include "linear_algebra/number.h"
-#include "linear_algebra/function.h"
-#include "linear_algebra/tensor.h"
+#include "math/number.h"
+#include "math/function.h"
+#include "math/tensor.h"
 
 #include <iostream>
 
-using Number = ln::Number<float>;
-using Tensor = ln::Tensor<Number>;
-using Function = ln::Function<float>;
+using Number = sdlm::Number<float>;
+using Tensor = sdlm::Tensor<Number>;
+using Function = sdlm::Function<float>;
 
-namespace ml {
+namespace sdl {
 
 class Linear {
 private:
@@ -96,4 +96,4 @@ public:
     }
 };
 
-}  // namespace ml
+}  // namespace sdl

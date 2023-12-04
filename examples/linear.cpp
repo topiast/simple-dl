@@ -1,12 +1,12 @@
-#include "linear_algebra/number.h"
-#include "linear_algebra/tensor.h"
+#include "math/number.h"
+#include "math/tensor.h"
 #include "ml/linear.h"
 
 #include <iostream>
 
-using Number = ln::Number<float>;
-using Tensor = ln::Tensor<Number>;
-using Linear = ml::Linear;
+using Number = sdlm::Number<float>;
+using Tensor = sdlm::Tensor<Number>;
+using Linear = sdl::Linear;
 
 // create some linear function
 // returns a vector of 3 numbers

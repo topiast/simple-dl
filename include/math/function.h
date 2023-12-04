@@ -1,12 +1,12 @@
 #pragma once 
-#include "linear_algebra/number.h"
+#include "math/number.h"
 
 #include <cmath>
 #include <iostream>
 #include <vector>
 #include <functional>
 
-namespace ln {
+namespace sdlm {
 
 template <typename T>
 class Function {
@@ -41,4 +41,4 @@ public:
     }
 };
 
-} // namespace ln
+} // namespace sdlm

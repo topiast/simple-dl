@@ -1,9 +1,9 @@
-#include "linear_algebra/number.h"
-#include "linear_algebra/function.h"
+#include "math/number.h"
+#include "math/function.h"
 #include <iostream>
 #include <vector>
 
-using Number = ln::Number<float>;
+using Number = sdlm::Number<float>;
 
 
 
@@ -19,7 +19,7 @@ int main() {
     variables.push_back(&b);
     variables.push_back(&c);
 
-    ln::Function<float> func(variables, [&variables]() {
+    sdlm::Function<float> func(variables, [&variables]() {
         return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
     });
 

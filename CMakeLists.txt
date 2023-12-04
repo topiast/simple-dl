@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.5)
-project(linear_algebra_library VERSION 1.0)
+project(math_library VERSION 1.0)
 
 # Define C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add the library
-add_library(linear_algebra INTERFACE)
+add_library(math INTERFACE)
 
 # Add the include directory
-target_include_directories(linear_algebra INTERFACE include)
+target_include_directories(math INTERFACE include)
 
 # Find Google Test package (assuming installed via Homebrew)
 find_package(GTest REQUIRED)
@@ -21,9 +21,9 @@ add_executable(tensor examples/tensor.cpp)
 add_executable(linear examples/linear.cpp)
 
 # Link the library to the executable
-target_link_libraries(gradients PRIVATE linear_algebra)
-target_link_libraries(tensor PRIVATE linear_algebra)
-target_link_libraries(linear PRIVATE linear_algebra)
+target_link_libraries(gradients PRIVATE math)
+target_link_libraries(tensor PRIVATE math)
+target_link_libraries(linear PRIVATE math)
 
 # Add the test executable
 add_executable(test_gradients tests/test_gradients.cpp)
@@ -31,9 +31,9 @@ add_executable(test_tensors tests/test_tensors.cpp)
 add_executable(test_linear tests/test_linear.cpp)
 
 # Link the library and Google Test to the test executable
-target_link_libraries(test_gradients PRIVATE linear_algebra GTest::GTest GTest::Main)
-target_link_libraries(test_tensors PRIVATE linear_algebra GTest::GTest GTest::Main)
-target_link_libraries(test_linear PRIVATE linear_algebra GTest::GTest GTest::Main)
+target_link_libraries(test_gradients PRIVATE math GTest::GTest GTest::Main)
+target_link_libraries(test_tensors PRIVATE math GTest::GTest GTest::Main)
+target_link_libraries(test_linear PRIVATE math GTest::GTest GTest::Main)
 
 # Add the test to CTest
 add_test(

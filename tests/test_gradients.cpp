@@ -1,10 +1,10 @@
-#include "linear_algebra/number.h"
-#include "linear_algebra/function.h"
+#include "math/number.h"
+#include "math/function.h"
 #include <gtest/gtest.h>
 #include <vector>
 #include <cmath>
 
-using Number = ln::Number<float>;
+using Number = sdlm::Number<float>;
 
 TEST(TestGradients, TestFunctionValuesAndGradients) {
     std::vector<Number*> variables;
@@ -16,7 +16,7 @@ TEST(TestGradients, TestFunctionValuesAndGradients) {
     variables.push_back(&b);
     variables.push_back(&c);
 
-    ln::Function<float> func(variables, [&variables]() {
+    sdlm::Function<float> func(variables, [&variables]() {
         return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
     });
 
@@ -47,7 +47,7 @@ TEST(TestGradients, TestFunctionValuesAndGradientsDivision) {
     variables.push_back(&b);
     variables.push_back(&c);
 
-    ln::Function<float> func(variables, [&variables]() {
+    sdlm::Function<float> func(variables, [&variables]() {
         return (*variables[0]) / (*variables[1]) + (*variables[2]) * 2; // 1 / 2 + 3 * 2 = 6.5
     });
 
@@ -85,8 +85,8 @@ TEST(TestGradients, TestFunctionValuesAndGradientsPower) {
     variables.push_back(&c);
     
 
-    ln::Function<float> func(variables, [&variables]() {
-        return ln::pow((*variables[0]), (*variables[1])) + (*variables[2]) * 2; 
+    sdlm::Function<float> func(variables, [&variables]() {
+        return sdlm::pow((*variables[0]), (*variables[1])) + (*variables[2]) * 2; 
     });
 
     // vector of expected function gradients
@@ -121,8 +121,8 @@ TEST(TestGradients, TestFunctionValuesAndGradientsSqrt) {
     variables.push_back(&b);
     variables.push_back(&c);
 
-    ln::Function<float> func(variables, [&variables]() {
-        return ln::sqrt((*variables[0])) + (*variables[2]) * 2; // sqrt(1) + 3 * 2 = 7
+    sdlm::Function<float> func(variables, [&variables]() {
+        return sdlm::sqrt((*variables[0])) + (*variables[2]) * 2; // sqrt(1) + 3 * 2 = 7
     });
 
     // vector of expected function gradients
@@ -151,8 +151,8 @@ TEST(TestGradients, TestFunctionValuesAndGradientsAbs) {
     variables.push_back(&b);
     variables.push_back(&c);
 
-    ln::Function<float> func(variables, [&variables]() {
-        return ln::abs((*variables[0])) + (*variables[2]) * 2; // abs(1) + 3 * 2 = 7
+    sdlm::Function<float> func(variables, [&variables]() {
+        return sdlm::abs((*variables[0])) + (*variables[2]) * 2; // abs(1) + 3 * 2 = 7
     });
 
     // vector of expected function gradients
@@ -170,8 +170,8 @@ TEST(TestGradients, TestFunctionValuesAndGradientsAbs) {
     }
 }
 
-// test ln
-TEST(TestGradients, TestFunctionValuesAndGradientsLn) {
+// test sdlm
+TEST(TestGradients, TestFunctionValuesAndGradientssdlm) {
     // variables
     float x1, x2, x3;
     // create random integers
@@ -189,8 +189,8 @@ TEST(TestGradients, TestFunctionValuesAndGradientsLn) {
     variables.push_back(&b);
     variables.push_back(&c);
 
-    ln::Function<float> func(variables, [&variables]() {
-        return ln::log((*variables[0])) + (*variables[2]) * 2; // ln(1) + 3 * 2 = 7
+    sdlm::Function<float> func(variables, [&variables]() {
+        return sdlm::log((*variables[0])) + (*variables[2]) * 2; // sdlm(1) + 3 * 2 = 7
     });
 
     // vector of expected function gradients
@@ -231,9 +231,9 @@ TEST(TestGradients, TestFunctionValuesAndGradientsComplicated) {
     variables.push_back(&b);
     variables.push_back(&c);
 
-    ln::Function<float> func(variables, [&variables]() {
+    sdlm::Function<float> func(variables, [&variables]() {
 
-        return ln::pow((*variables[0]), (*variables[1])) + ln::sqrt((*variables[2])) * 2; // 2^3 + sqrt(4) * 2 = 14
+        return sdlm::pow((*variables[0]), (*variables[1])) + sdlm::sqrt((*variables[2])) * 2; // 2^3 + sqrt(4) * 2 = 14
     });
 
     // vector of expected function gradients
