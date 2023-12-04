@@ -1,6 +1,6 @@
 #include "math/number.h"
 #include "math/tensor.h"
-#include "ml/linear.h"
+#include "ml/linear_model.h"
 
 #include <iostream>
 

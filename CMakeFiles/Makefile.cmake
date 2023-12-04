@@ -63,8 +63,8 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/gradients.dir/DependInfo.cmake"
   "CMakeFiles/tensor.dir/DependInfo.cmake"
-  "CMakeFiles/linear.dir/DependInfo.cmake"
+  "CMakeFiles/linear_model.dir/DependInfo.cmake"
   "CMakeFiles/test_gradients.dir/DependInfo.cmake"
   "CMakeFiles/test_tensors.dir/DependInfo.cmake"
-  "CMakeFiles/test_linear.dir/DependInfo.cmake"
+  "CMakeFiles/test_linear_model.dir/DependInfo.cmake"
   )

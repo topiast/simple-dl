@@ -143,17 +143,17 @@ tensor/fast:
 .PHONY : tensor/fast
 
 #=============================================================================
-# Target rules for targets named linear
+# Target rules for targets named linear_model
 
 # Build rule for target.
-linear: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 linear
-.PHONY : linear
+linear_model: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 linear_model
+.PHONY : linear_model
 
 # fast build rule for target.
-linear/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear.dir/build.make CMakeFiles/linear.dir/build
-.PHONY : linear/fast
+linear_model/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear_model.dir/build.make CMakeFiles/linear_model.dir/build
+.PHONY : linear_model/fast
 
 #=============================================================================
 # Target rules for targets named test_gradients
@@ -182,17 +182,17 @@ test_tensors/fast:
 .PHONY : test_tensors/fast
 
 #=============================================================================
-# Target rules for targets named test_linear
+# Target rules for targets named test_linear_model
 
 # Build rule for target.
-test_linear: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_linear
-.PHONY : test_linear
+test_linear_model: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_linear_model
+.PHONY : test_linear_model
 
 # fast build rule for target.
-test_linear/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear.dir/build.make CMakeFiles/test_linear.dir/build
-.PHONY : test_linear/fast
+test_linear_model/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear_model.dir/build.make CMakeFiles/test_linear_model.dir/build
+.PHONY : test_linear_model/fast
 
 examples/gradients.o: examples/gradients.cpp.o
 .PHONY : examples/gradients.o
@@ -218,29 +218,29 @@ examples/gradients.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gradients.dir/build.make CMakeFiles/gradients.dir/examples/gradients.cpp.s
 .PHONY : examples/gradients.cpp.s
 
-examples/linear.o: examples/linear.cpp.o
-.PHONY : examples/linear.o
+examples/linear_model.o: examples/linear_model.cpp.o
+.PHONY : examples/linear_model.o
 
 # target to build an object file
-examples/linear.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear.dir/build.make CMakeFiles/linear.dir/examples/linear.cpp.o
-.PHONY : examples/linear.cpp.o
+examples/linear_model.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear_model.dir/build.make CMakeFiles/linear_model.dir/examples/linear_model.cpp.o
+.PHONY : examples/linear_model.cpp.o
 
-examples/linear.i: examples/linear.cpp.i
-.PHONY : examples/linear.i
+examples/linear_model.i: examples/linear_model.cpp.i
+.PHONY : examples/linear_model.i
 
 # target to preprocess a source file
-examples/linear.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear.dir/build.make CMakeFiles/linear.dir/examples/linear.cpp.i
-.PHONY : examples/linear.cpp.i
+examples/linear_model.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear_model.dir/build.make CMakeFiles/linear_model.dir/examples/linear_model.cpp.i
+.PHONY : examples/linear_model.cpp.i
 
-examples/linear.s: examples/linear.cpp.s
-.PHONY : examples/linear.s
+examples/linear_model.s: examples/linear_model.cpp.s
+.PHONY : examples/linear_model.s
 
 # target to generate assembly for a file
-examples/linear.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear.dir/build.make CMakeFiles/linear.dir/examples/linear.cpp.s
-.PHONY : examples/linear.cpp.s
+examples/linear_model.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear_model.dir/build.make CMakeFiles/linear_model.dir/examples/linear_model.cpp.s
+.PHONY : examples/linear_model.cpp.s
 
 examples/tensor.o: examples/tensor.cpp.o
 .PHONY : examples/tensor.o
@@ -290,29 +290,29 @@ tests/test_gradients.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_gradients.dir/build.make CMakeFiles/test_gradients.dir/tests/test_gradients.cpp.s
 .PHONY : tests/test_gradients.cpp.s
 
-tests/test_linear.o: tests/test_linear.cpp.o
-.PHONY : tests/test_linear.o
+tests/test_linear_model.o: tests/test_linear_model.cpp.o
+.PHONY : tests/test_linear_model.o
 
 # target to build an object file
-tests/test_linear.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear.dir/build.make CMakeFiles/test_linear.dir/tests/test_linear.cpp.o
-.PHONY : tests/test_linear.cpp.o
+tests/test_linear_model.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear_model.dir/build.make CMakeFiles/test_linear_model.dir/tests/test_linear_model.cpp.o
+.PHONY : tests/test_linear_model.cpp.o
 
-tests/test_linear.i: tests/test_linear.cpp.i
-.PHONY : tests/test_linear.i
+tests/test_linear_model.i: tests/test_linear_model.cpp.i
+.PHONY : tests/test_linear_model.i
 
 # target to preprocess a source file
-tests/test_linear.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear.dir/build.make CMakeFiles/test_linear.dir/tests/test_linear.cpp.i
-.PHONY : tests/test_linear.cpp.i
+tests/test_linear_model.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear_model.dir/build.make CMakeFiles/test_linear_model.dir/tests/test_linear_model.cpp.i
+.PHONY : tests/test_linear_model.cpp.i
 
-tests/test_linear.s: tests/test_linear.cpp.s
-.PHONY : tests/test_linear.s
+tests/test_linear_model.s: tests/test_linear_model.cpp.s
+.PHONY : tests/test_linear_model.s
 
 # target to generate assembly for a file
-tests/test_linear.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear.dir/build.make CMakeFiles/test_linear.dir/tests/test_linear.cpp.s
-.PHONY : tests/test_linear.cpp.s
+tests/test_linear_model.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear_model.dir/build.make CMakeFiles/test_linear_model.dir/tests/test_linear_model.cpp.s
+.PHONY : tests/test_linear_model.cpp.s
 
 tests/test_tensors.o: tests/test_tensors.cpp.o
 .PHONY : tests/test_tensors.o
@@ -347,26 +347,26 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... gradients"
-	@echo "... linear"
+	@echo "... linear_model"
 	@echo "... tensor"
 	@echo "... test_gradients"
-	@echo "... test_linear"
+	@echo "... test_linear_model"
 	@echo "... test_tensors"
 	@echo "... examples/gradients.o"
 	@echo "... examples/gradients.i"
 	@echo "... examples/gradients.s"
-	@echo "... examples/linear.o"
-	@echo "... examples/linear.i"
-	@echo "... examples/linear.s"
+	@echo "... examples/linear_model.o"
+	@echo "... examples/linear_model.i"
+	@echo "... examples/linear_model.s"
 	@echo "... examples/tensor.o"
 	@echo "... examples/tensor.i"
 	@echo "... examples/tensor.s"
 	@echo "... tests/test_gradients.o"
 	@echo "... tests/test_gradients.i"
 	@echo "... tests/test_gradients.s"
-	@echo "... tests/test_linear.o"
-	@echo "... tests/test_linear.i"
-	@echo "... tests/test_linear.s"
+	@echo "... tests/test_linear_model.o"
+	@echo "... tests/test_linear_model.i"
+	@echo "... tests/test_linear_model.s"
 	@echo "... tests/test_tensors.o"
 	@echo "... tests/test_tensors.i"
 	@echo "... tests/test_tensors.s"

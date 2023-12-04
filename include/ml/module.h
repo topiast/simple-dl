@@ -4,6 +4,7 @@
 #include <iostream>
 #include "math/number.h"
 
+namespace sdlm {
 
 template <typename T>
 class Module {
@@ -14,3 +15,5 @@ public:
     
     virtual std::vector<T*> get_parameters() = 0;
 };
+    
+} // namespace sdlm
