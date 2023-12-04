@@ -4,6 +4,7 @@
 #include <iostream>
 // to get random id
 #include <random>
+#include <limits>
 
 namespace sdlm {
 
@@ -31,6 +32,14 @@ public:
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> dis(0, 65535);
         id = dis(gen);
+    }
+
+    static Number<T> max() {
+        return Number<T>(std::numeric_limits<T>::max());
+    }
+
+    static Number<T> min() {
+        return Number<T>(std::numeric_limits<T>::min());
     }
 
     T value() const { return m_value; }
@@ -89,6 +98,18 @@ public:
         }
 
         m_value /= rhs.m_value;
+
+        return *this;
+    }
+    
+    Number& clip(const T& min, const T& max) {
+        if (count_gradient) {
+            if (m_value < min || m_value > max) {
+                m_gradient = 0;
+            }
+        }
+
+        m_value = std::max(min, std::min(m_value, max));
 
         return *this;
     }
@@ -167,6 +188,37 @@ public:
 
         return *this;
     }
+
+    Number& sin() {
+        if (count_gradient) {
+            m_gradient = m_gradient * std::cos(m_value);
+        }
+
+        m_value = std::sin(m_value);
+
+        return *this;
+    }
+
+    Number& cos() {
+        if (count_gradient) {
+            m_gradient = -m_gradient * std::sin(m_value);
+        }
+
+        m_value = std::cos(m_value);
+
+        return *this;
+    }
+
+    Number& tan() {
+        if (count_gradient) {
+            m_gradient = m_gradient / (std::cos(m_value) * std::cos(m_value));
+        }
+
+        m_value = std::tan(m_value);
+
+        return *this;
+    }
+
     
 
     Number& operator%=(const Number& rhs) {
@@ -360,6 +412,25 @@ Number<T> log10(const Number<T>& x) {
     return result.log10();
 }
 
+template <typename T>
+Number<T> sin(const Number<T>& x) {
+    Number<T> result = x;
+    return result.sin();
+}
+
+template <typename T>
+Number<T> cos(const Number<T>& x) {
+    Number<T> result = x;
+    return result.cos();
+}
+
+template <typename T>
+Number<T> tan(const Number<T>& x) {
+    Number<T> result = x;
+    return result.sin() / result.cos();
+}
+
+
 } // namespace sdlm
 
 // hash function for Number
@@ -406,6 +477,30 @@ namespace std {
     template <typename T>
     sdlm::Number<T> log10(const sdlm::Number<T>& x) {
         return sdlm::log10(x);
+    }
+
+    // sin function for Number
+    template <typename T>
+    sdlm::Number<T> sin(const sdlm::Number<T>& x) {
+        return sdlm::sin(x);
+    }
+
+    // cos function for Number
+    template <typename T>
+    sdlm::Number<T> cos(const sdlm::Number<T>& x) {
+        return sdlm::cos(x);
+    }
+
+    // tan function for Number
+    template <typename T>
+    sdlm::Number<T> tan(const sdlm::Number<T>& x) {
+        return sdlm::tan(x);
+    }
+
+    // abs function for Number
+    template <typename T>
+    sdlm::Number<T> abs(const sdlm::Number<T>& x) {
+        return sdlm::abs(x);
     }
 
 

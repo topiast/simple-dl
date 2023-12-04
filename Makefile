@@ -156,6 +156,19 @@ linear_model/fast:
 .PHONY : linear_model/fast
 
 #=============================================================================
+# Target rules for targets named simple_network
+
+# Build rule for target.
+simple_network: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 simple_network
+.PHONY : simple_network
+
+# fast build rule for target.
+simple_network/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_network.dir/build.make CMakeFiles/simple_network.dir/build
+.PHONY : simple_network/fast
+
+#=============================================================================
 # Target rules for targets named test_gradients
 
 # Build rule for target.
@@ -241,6 +254,30 @@ examples/linear_model.s: examples/linear_model.cpp.s
 examples/linear_model.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear_model.dir/build.make CMakeFiles/linear_model.dir/examples/linear_model.cpp.s
 .PHONY : examples/linear_model.cpp.s
+
+examples/simple_network.o: examples/simple_network.cpp.o
+.PHONY : examples/simple_network.o
+
+# target to build an object file
+examples/simple_network.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_network.dir/build.make CMakeFiles/simple_network.dir/examples/simple_network.cpp.o
+.PHONY : examples/simple_network.cpp.o
+
+examples/simple_network.i: examples/simple_network.cpp.i
+.PHONY : examples/simple_network.i
+
+# target to preprocess a source file
+examples/simple_network.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_network.dir/build.make CMakeFiles/simple_network.dir/examples/simple_network.cpp.i
+.PHONY : examples/simple_network.cpp.i
+
+examples/simple_network.s: examples/simple_network.cpp.s
+.PHONY : examples/simple_network.s
+
+# target to generate assembly for a file
+examples/simple_network.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_network.dir/build.make CMakeFiles/simple_network.dir/examples/simple_network.cpp.s
+.PHONY : examples/simple_network.cpp.s
 
 examples/tensor.o: examples/tensor.cpp.o
 .PHONY : examples/tensor.o
@@ -348,6 +385,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... gradients"
 	@echo "... linear_model"
+	@echo "... simple_network"
 	@echo "... tensor"
 	@echo "... test_gradients"
 	@echo "... test_linear_model"
@@ -358,6 +396,9 @@ help:
 	@echo "... examples/linear_model.o"
 	@echo "... examples/linear_model.i"
 	@echo "... examples/linear_model.s"
+	@echo "... examples/simple_network.o"
+	@echo "... examples/simple_network.i"
+	@echo "... examples/simple_network.s"
 	@echo "... examples/tensor.o"
 	@echo "... examples/tensor.i"
 	@echo "... examples/tensor.s"

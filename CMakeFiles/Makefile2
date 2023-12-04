@@ -66,6 +66,7 @@ CMAKE_BINARY_DIR = /Users/topiast/code/cpp/simple-dl
 all: CMakeFiles/gradients.dir/all
 all: CMakeFiles/tensor.dir/all
 all: CMakeFiles/linear_model.dir/all
+all: CMakeFiles/simple_network.dir/all
 all: CMakeFiles/test_gradients.dir/all
 all: CMakeFiles/test_tensors.dir/all
 all: CMakeFiles/test_linear_model.dir/all
@@ -79,6 +80,7 @@ preinstall:
 clean: CMakeFiles/gradients.dir/clean
 clean: CMakeFiles/tensor.dir/clean
 clean: CMakeFiles/linear_model.dir/clean
+clean: CMakeFiles/simple_network.dir/clean
 clean: CMakeFiles/test_gradients.dir/clean
 clean: CMakeFiles/test_tensors.dir/clean
 clean: CMakeFiles/test_linear_model.dir/clean
@@ -117,7 +119,7 @@ CMakeFiles/gradients.dir/clean:
 CMakeFiles/tensor.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tensor.dir/build.make CMakeFiles/tensor.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tensor.dir/build.make CMakeFiles/tensor.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=5,6 "Built target tensor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=7,8 "Built target tensor"
 .PHONY : CMakeFiles/tensor.dir/all
 
 # Build rule for subdir invocation for target.
@@ -163,13 +165,39 @@ CMakeFiles/linear_model.dir/clean:
 .PHONY : CMakeFiles/linear_model.dir/clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/simple_network.dir
+
+# All Build rule for target.
+CMakeFiles/simple_network.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_network.dir/build.make CMakeFiles/simple_network.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_network.dir/build.make CMakeFiles/simple_network.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=5,6 "Built target simple_network"
+.PHONY : CMakeFiles/simple_network.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/simple_network.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/topiast/code/cpp/simple-dl/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/simple_network.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/topiast/code/cpp/simple-dl/CMakeFiles 0
+.PHONY : CMakeFiles/simple_network.dir/rule
+
+# Convenience name for target.
+simple_network: CMakeFiles/simple_network.dir/rule
+.PHONY : simple_network
+
+# clean rule for target.
+CMakeFiles/simple_network.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_network.dir/build.make CMakeFiles/simple_network.dir/clean
+.PHONY : CMakeFiles/simple_network.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/test_gradients.dir
 
 # All Build rule for target.
 CMakeFiles/test_gradients.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_gradients.dir/build.make CMakeFiles/test_gradients.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_gradients.dir/build.make CMakeFiles/test_gradients.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=7,8 "Built target test_gradients"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=9,10 "Built target test_gradients"
 .PHONY : CMakeFiles/test_gradients.dir/all
 
 # Build rule for subdir invocation for target.
@@ -195,7 +223,7 @@ CMakeFiles/test_gradients.dir/clean:
 CMakeFiles/test_tensors.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_tensors.dir/build.make CMakeFiles/test_tensors.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_tensors.dir/build.make CMakeFiles/test_tensors.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=11,12 "Built target test_tensors"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=13,14 "Built target test_tensors"
 .PHONY : CMakeFiles/test_tensors.dir/all
 
 # Build rule for subdir invocation for target.
@@ -221,7 +249,7 @@ CMakeFiles/test_tensors.dir/clean:
 CMakeFiles/test_linear_model.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear_model.dir/build.make CMakeFiles/test_linear_model.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_linear_model.dir/build.make CMakeFiles/test_linear_model.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=9,10 "Built target test_linear_model"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/topiast/code/cpp/simple-dl/CMakeFiles --progress-num=11,12 "Built target test_linear_model"
 .PHONY : CMakeFiles/test_linear_model.dir/all
 
 # Build rule for subdir invocation for target.

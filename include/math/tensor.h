@@ -327,6 +327,38 @@ class Tensor {
         return result;
     }
 
+    // Activation functions
+    Tensor sigmoid() const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            result.m_data[i] = (T(1) / (T(1) + (-result.m_data[i]).exp()));
+        }
+
+        return result;
+    }
+
+    Tensor softmax() const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); i += m_shape.back()) {
+            T sum = 0;
+            for (size_t j = 0; j < m_shape.back(); ++j) {
+                sum += std::exp(result.m_data[i + j]);
+            }
+            for (size_t j = 0; j < m_shape.back(); ++j) {
+                result.m_data[i + j] = std::exp(result.m_data[i + j]) / sum;
+            }
+        }
+
+        return result;
+    }
+
+    // Activation functions
 
     const std::vector<int>& get_shape() const {
         return m_shape;
