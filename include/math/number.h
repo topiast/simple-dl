@@ -101,122 +101,134 @@ public:
 
         return *this;
     }
-    
-    Number& clip(const T& min, const T& max) {
+
+    // Activation functions
+
+    // Activation functions
+
+    Number clip(const T& min, const T& max) const {
+        Number result(*this);
         if (count_gradient) {
-            if (m_value < min || m_value > max) {
-                m_gradient = 0;
+            if (result.m_value < min || result.m_value > max) {
+                result.m_gradient = 0;
             }
         }
 
-        m_value = std::max(min, std::min(m_value, max));
+        result.m_value = std::max(min, std::min(result.m_value, max));
 
-        return *this;
+        return result;
     }
 
-    Number& abs() {
+    Number abs() const {
+        Number result(*this);
         if (count_gradient) {
-            if (m_value < 0) {
-                m_gradient = -m_gradient;
-            } 
-            
+            if (result.m_value < 0) {
+                result.m_gradient = -result.m_gradient;
+            }
         }
 
-        m_value = std::abs(m_value);
+        result.m_value = std::abs(result.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& pow(const Number& rhs) {
+    Number pow(const Number& rhs) const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = m_gradient * rhs.m_value * std::pow(m_value, rhs.m_value - 1); 
+            result.m_gradient = result.m_gradient * rhs.m_value * std::pow(result.m_value, rhs.m_value - 1);
         }
 
-        m_value = std::pow(m_value, rhs.m_value);
+        result.m_value = std::pow(result.m_value, rhs.m_value);
 
-        return *this;
+        return result;
     }
 
-    // this function is used to calculate gradient of x ^ y, but gradient is relative to y
-    Number& pow_inv_for_grad(const Number& rhs) {
-        // here x is m_value, y is rhs.m_value
+    Number pow_inv_for_grad(const Number& rhs) const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = std::pow(m_value, rhs.m_value) * std::log(rhs.m_value) * rhs.m_gradient; // x ^ y * sdlm(y) * y' ??? should be x ^ y * sdlm(x) * y' ???
+            result.m_gradient = std::pow(result.m_value, rhs.m_value) * std::log(rhs.m_value) * rhs.m_gradient;
         }
 
-        m_value = std::pow(m_value, rhs.m_value);
+        result.m_value = std::pow(result.m_value, rhs.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& sqrt() {
+    Number sqrt() const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = m_gradient / (2 * std::sqrt(m_value));
+            result.m_gradient = result.m_gradient / (2 * std::sqrt(result.m_value));
         }
 
-        m_value = std::sqrt(m_value);
+        result.m_value = std::sqrt(result.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& exp() {
+    Number exp() const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = m_gradient * std::exp(m_value);
+            result.m_gradient = result.m_gradient * std::exp(result.m_value);
         }
 
-        m_value = std::exp(m_value);
+        result.m_value = std::exp(result.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& log() {
+    Number log() const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = m_gradient / m_value;
+            result.m_gradient = result.m_gradient / result.m_value;
         }
 
-        m_value = std::log(m_value);
+        result.m_value = std::log(result.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& log10() {
+    Number log10() const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = m_gradient / (m_value * std::log(10));
+            result.m_gradient = result.m_gradient / (result.m_value * std::log(10));
         }
 
-        m_value = std::log10(m_value);
+        result.m_value = std::log10(result.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& sin() {
+    Number sin() const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = m_gradient * std::cos(m_value);
+            result.m_gradient = result.m_gradient * std::cos(result.m_value);
         }
 
-        m_value = std::sin(m_value);
+        result.m_value = std::sin(result.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& cos() {
+    Number cos() const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = -m_gradient * std::sin(m_value);
+            result.m_gradient = -result.m_gradient * std::sin(result.m_value);
         }
 
-        m_value = std::cos(m_value);
+        result.m_value = std::cos(result.m_value);
 
-        return *this;
+        return result;
     }
 
-    Number& tan() {
+    Number tan() const {
+        Number result(*this);
         if (count_gradient) {
-            m_gradient = m_gradient / (std::cos(m_value) * std::cos(m_value));
+            result.m_gradient = result.m_gradient / (std::cos(result.m_value) * std::cos(result.m_value));
         }
 
-        m_value = std::tan(m_value);
+        result.m_value = std::tan(result.m_value);
 
-        return *this;
+        return result;
     }
 
     
@@ -429,6 +441,7 @@ Number<T> tan(const Number<T>& x) {
     Number<T> result = x;
     return result.sin() / result.cos();
 }
+
 
 
 } // namespace sdlm
