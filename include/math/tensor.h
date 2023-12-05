@@ -358,6 +358,19 @@ class Tensor {
         return result;
     }
 
+    Tensor relu() const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            // so that the gradient is correct
+            result.m_data[i] = result.m_data[i].relu();
+        }
+
+        return result;
+    }
+
     // Activation functions
 
     const std::vector<int>& get_shape() const {

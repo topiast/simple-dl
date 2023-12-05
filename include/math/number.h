@@ -104,6 +104,19 @@ public:
 
     // Activation functions
 
+    Number relu() const {
+        Number result(*this);
+        if (count_gradient) {
+            if (result.m_value < 0) {
+                result.m_gradient = 0;
+            }
+        }
+
+        result.m_value = std::max(0, result.m_value);
+
+        return result;
+    }
+
     // Activation functions
 
     Number clip(const T& min, const T& max) const {
