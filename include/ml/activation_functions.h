@@ -28,4 +28,24 @@ public:
 
 };
 
+template <typename T>
+class ReLU : public Module<T> {
+public:
+
+    ReLU() {}
+
+    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.relu();
+    }
+
+    std::vector<sdlm::Number<T>*> get_parameters() override {
+        return {};
+    }
+
+    std::string get_name() override {
+        return "ReLU";
+    }
+
+};
+
 } // namespace sdl

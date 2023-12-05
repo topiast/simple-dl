@@ -66,6 +66,12 @@ class Sequential : public Module<T> {
                 return "Sequential";
             }
 
+            void print_pointers() {
+                for (auto pointer : this->get_parameters()) {
+                    std::cout << pointer << std::endl;
+                }
+            }
+
     };
 
     } // namespace sdl

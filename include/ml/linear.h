@@ -18,10 +18,27 @@ private:
 
 public:
 
-    Linear(int in_features, int out_features) {
-        weights.ones({in_features, out_features});
-        bias.ones({out_features});
+    enum class Initializer {
+        Zeros,
+        Xavier,
+        He
+    };
+
+    Linear(int in_features, int out_features, Initializer initializer = Initializer::Xavier) {
+        bias.zeros({out_features});
+
+        if (initializer == Initializer::Zeros) {
+            weights.zeros({in_features, out_features});
+        } else if (initializer == Initializer::Xavier) {
+            sdlm::Number<T> std = sqrt(2.0 / (in_features + out_features));
+            weights.random({in_features, out_features}, 0.f, std.value());
+
+        } else if (initializer == Initializer::He) {
+            sdlm::Number<T> std = sqrt(2.0 / in_features);
+            weights.random({in_features, out_features}, 0.f, std.value());
+        }
     }
+
 
     sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
         return input.matmul(weights) + bias;

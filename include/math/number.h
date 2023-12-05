@@ -42,6 +42,17 @@ public:
         return Number<T>(std::numeric_limits<T>::min());
     }
 
+    static Number<T> epsilon() {
+        return Number<T>(std::numeric_limits<T>::epsilon());
+    }
+
+    void randomize(const T& mean, const T& std) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::normal_distribution<> dis(mean, std);
+        m_value = dis(gen);
+    }
+
     T value() const { return m_value; }
 
     // set count_gradient to true to count gradient
@@ -528,6 +539,7 @@ namespace std {
     sdlm::Number<T> abs(const sdlm::Number<T>& x) {
         return sdlm::abs(x);
     }
+
 
 
 } // namespace std

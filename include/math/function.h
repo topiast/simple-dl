@@ -39,6 +39,12 @@ public:
     void set_variables(const std::vector<Number<T>*>& vars) { // Changed parameter type
         variables = vars;
     }
+
+    void print_pointers() {
+        for (auto& var : variables) {
+            std::cout << var << std::endl;
+        }
+    }
 };
 
 } // namespace sdlm

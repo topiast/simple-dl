@@ -2,6 +2,10 @@
 
 #include <cmath>
 #include <iostream>
+#include <vector>
+#include <random>
+#include <stdexcept>
+
 
 namespace sdlm {
 
@@ -16,7 +20,7 @@ class Tensor {
 
     Tensor(const std::vector<T>& data, const std::vector<int>& shape) : m_data(data), m_shape(shape) {}
 
-    Tensor& zeroes(const std::vector<int>& shape) {
+    Tensor& zeros(const std::vector<int>& shape) {
         m_shape = shape;
         int size = 1;
         for (int i = 0; i < shape.size(); i++) {
@@ -33,6 +37,34 @@ class Tensor {
             size *= shape[i];
         }
         m_data = std::vector<T>(size, T(1));
+        return *this;
+    }
+
+    Tensor& random(const std::vector<int>& shape, float mean = 0.f, float stddev = 1.f) {
+        m_shape = shape;
+        int size = 1;
+        for (int i = 0; i < shape.size(); i++) {
+            size *= shape[i];
+        }
+        m_data = std::vector<T>(size, T(0));
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::normal_distribution<float> d(mean, stddev);
+
+        for (int i = 0; i < size; i++) {
+            float r = d(gen);
+            
+            m_data[i] = r;
+        }
+
+        return *this;
+    }
+
+    Tensor& fill(T value) {
+        for (int i = 0; i < m_data.size(); i++) {
+            m_data[i] = value;
+        }
         return *this;
     }
 
@@ -258,7 +290,7 @@ class Tensor {
         }
 
         Tensor result;
-        result.zeroes({m_shape[1], m_shape[0]});
+        result.zeros({m_shape[1], m_shape[0]});
 
         for (size_t i = 0; i < m_shape[0]; ++i) {
             for (size_t j = 0; j < m_shape[1]; ++j) {

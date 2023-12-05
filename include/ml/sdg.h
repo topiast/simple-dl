@@ -36,6 +36,7 @@ public:
 
         // Update parameters
         for (int i = 0; i < parameters.size(); i++) {
+            // std::cout << "updating parameter " << parameters[i] << " with gradient " << gradients[i] << std::endl;
             if (clip_gradients) {
                 *parameters[i] -= gradients[i].clip(-1, 1) * learning_rate;
             } else {
@@ -46,6 +47,7 @@ public:
         return total_loss;
 
     }
+
 
     void fit(int epochs, bool print_loss = true) {
         for (int i = 0; i < epochs; i++) {
