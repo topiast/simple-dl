@@ -58,11 +58,6 @@ int main() {
     ReLU* act1 = new ReLU();
     Linear* linear2 = new Linear(5, 1);
     Sigmoid* act2 = new Sigmoid();
-
-    // Linear* linear1 = new Linear(3, 5, Linear::Initializer::He);
-    // ReLU* act1 = new ReLU();
-    // Linear* linear2 = new Linear(5, 1, Linear::Initializer::He);
-    // ReLU* act2 = new ReLU();
     
     Sequential simple_network({linear1, act1, linear2});
 
@@ -99,25 +94,11 @@ int main() {
         return (simple_network.forward(X) - Y).pow(2).sum() / X.get_shape()[0];
     });
 
-    // std::cout << "Function pointers: " << std::endl;
-    // simple_network.print_pointers();
-    // std::cout << "Loss function pointers: " << std::endl;
-    // loss_func.print_pointers();
-    // std::cout << "linear1 parameters: " << std::endl;
-    // for (auto& p : linear1->get_parameters()) {
-    //     std::cout << p << std::endl;
-    // }
-    // std::cout << "linear2 parameters: " << std::endl;
-    // for (auto& p : linear2->get_parameters()) {
-    //     std::cout << p << std::endl;
-    // }
-
-
 
     SDG sdg(parameters, loss_func, 0.001, 0.9);
 
 
-    sdg.fit_until_convergence(0.0001);
+    sdg.fit_until_convergence(0.00001);
     // sdg.fit(1000, true);
 
     // print Y
