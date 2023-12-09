@@ -123,7 +123,7 @@ public:
             }
         }
 
-        result.m_value = std::max(0, result.m_value);
+        result.m_value = std::max(T(0), result.m_value);
 
         return result;
     }

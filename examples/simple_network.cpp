@@ -14,6 +14,7 @@ using Number = sdlm::Number<float>;
 using Tensor = sdlm::Tensor<Number>;
 using Linear = sdl::Linear<float>;
 using Sigmoid = sdl::Sigmoid<float>;
+using ReLU = sdl::ReLU<float>;
 using Sequential = sdl::Sequential<float>;
 using SDG = sdl::SDG<float>;
 using Function = sdlm::Function<float>;
@@ -54,14 +55,42 @@ int main() {
 
     // create a simple network
     Linear* linear1 = new Linear(3, 5);
-    Sigmoid* sigmoid = new Sigmoid();
+    ReLU* act1 = new ReLU();
     Linear* linear2 = new Linear(5, 1);
-    Sigmoid* sigmoid2 = new Sigmoid();
+    Sigmoid* act2 = new Sigmoid();
 
-    Sequential simple_network({linear1, sigmoid, linear2, sigmoid2});
+    // Linear* linear1 = new Linear(3, 5, Linear::Initializer::He);
+    // ReLU* act1 = new ReLU();
+    // Linear* linear2 = new Linear(5, 1, Linear::Initializer::He);
+    // ReLU* act2 = new ReLU();
+    
+    Sequential simple_network({linear1, act1, linear2});
+
+
+    // print weights
+    std::cout << "Weights: " << std::endl;
+    linear1->get_weights().print();
+    linear2->get_weights().print();
+
+    // print bias
+    std::cout << "Bias: " << std::endl;
+    linear1->get_bias().print();
+    linear2->get_bias().print();
 
     simple_network.print();
-    
+
+    // output of the model
+    std::cout << "Output: " << std::endl;
+    simple_network.forward(X).print();
+
+    // ouput of the first layer
+    std::cout << "Output of the first layer: " << std::endl;
+    linear1->forward(X).print();
+
+    // ouput of the second layer
+    std::cout << "Output of the second layer: " << std::endl;
+    linear2->forward(linear1->forward(X)).print();
+
 
     std::vector<Number*> parameters = simple_network.get_parameters();
 
@@ -85,7 +114,7 @@ int main() {
 
 
 
-    SDG sdg(parameters, loss_func, 1, false);
+    SDG sdg(parameters, loss_func, 0.001, 0.9);
 
 
     sdg.fit_until_convergence(0.0001);
@@ -108,9 +137,18 @@ int main() {
     std::cout << "Bias: " << std::endl;
     linear1->get_bias().print();
     linear2->get_bias().print();
+
+    // print loss
+    std::cout << "Loss: " << std::endl;
+    Number loss = loss_func.compute();
+
+    std::cout << loss << std::endl;
     
 
-    
+    delete linear1;
+    delete linear2;
+    delete act1;
+    delete act2;
 
     return 0;
 

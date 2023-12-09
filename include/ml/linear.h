@@ -25,7 +25,8 @@ public:
     };
 
     Linear(int in_features, int out_features, Initializer initializer = Initializer::Xavier) {
-        bias.zeros({out_features});
+        bias.zeros({1, out_features});
+        // bias = bias.transpose();
 
         if (initializer == Initializer::Zeros) {
             weights.zeros({in_features, out_features});
@@ -41,7 +42,7 @@ public:
 
 
     sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
-        return input.matmul(weights) + bias;
+        return input.matmul(weights).row_add(bias);
     }
 
     sdlm::Tensor<sdlm::Number<T>> get_weights() {

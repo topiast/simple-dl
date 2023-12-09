@@ -43,7 +43,7 @@ int main() {
 
 
 
-    result = tensor1.matmul(tensor2);
+    result = tensor2.matmul(tensor1);
     std::cout << "Result for tensor matmul t1 * t2: " << std::endl;
     result.print();
 

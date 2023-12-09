@@ -16,14 +16,20 @@ private:
     std::vector<sdlm::Number<T>*> parameters;
     sdlm::Function<T> loss_func;
     T learning_rate;
-    bool clip_gradients = true;
+    T momentum_factor;
+    bool clip_gradients;
+    std::vector<sdlm::Number<T>> momentums; 
 
 public:
+    SDG(std::vector<sdlm::Number<T>*> parameters, sdlm::Function<T> loss_func, T learning_rate, T momentum_factor = 0.9, bool clip_gradients = false)
+        : parameters(parameters), loss_func(loss_func), learning_rate(learning_rate), momentum_factor(momentum_factor) {
+        momentums.reserve(parameters.size());
+        for (auto& p : parameters) {
+            momentums.push_back(sdlm::Number<T>(0)); 
+        }
+    }    
 
-    SDG(std::vector<sdlm::Number<T>*> parameters, sdlm::Function<T> loss_func, T learning_rate) : parameters(parameters), loss_func(loss_func), learning_rate(learning_rate) {}
-
-    SDG(std::vector<sdlm::Number<T>*> parameters, sdlm::Function<T> loss_func, T learning_rate, bool clip_gradients) : parameters(parameters), loss_func(loss_func), learning_rate(learning_rate), clip_gradients(clip_gradients) {}
-    
+    // TODO: implenment adaptive learning rate
     sdlm::Number<T> step() {
         sdlm::Number<T> total_loss = loss_func.compute();
         // Calculate gradients
@@ -34,15 +40,17 @@ public:
         }
 
 
-        // Update parameters
+        // Update momentums and parameters using momentum
         for (int i = 0; i < parameters.size(); i++) {
-            // std::cout << "updating parameter " << parameters[i] << " with gradient " << gradients[i] << std::endl;
+            momentums[i] = momentums[i] * momentum_factor + gradients[i];
+            // std::cout << "parameter " << parameters[i] << " gradient: " << gradients[i] << std::endl;
             if (clip_gradients) {
-                *parameters[i] -= gradients[i].clip(-1, 1) * learning_rate;
+                *parameters[i] -= momentums[i].clip(-1, 1) * learning_rate;
             } else {
-                *parameters[i] -= gradients[i] * learning_rate;
+                *parameters[i] -= momentums[i] * learning_rate;
             }
         }
+
 
         return total_loss;
 
