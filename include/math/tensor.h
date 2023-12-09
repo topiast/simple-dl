@@ -364,6 +364,14 @@ class Tensor {
         return result;
     }
 
+    T norm(T p) const {
+        T result = T(0);
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            result += std::pow(std::abs(m_data[i]), p);
+        }
+        return std::pow(result, T(1) / p);
+    }
+
     // Activation functions
     Tensor sigmoid() const {
         Tensor result;

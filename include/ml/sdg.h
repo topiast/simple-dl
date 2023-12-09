@@ -29,7 +29,6 @@ public:
         }
     }    
 
-    // TODO: implenment adaptive learning rate
     sdlm::Number<T> step() {
         sdlm::Number<T> total_loss = loss_func.compute();
         // Calculate gradients
