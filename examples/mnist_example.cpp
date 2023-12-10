@@ -18,6 +18,7 @@ using Linear = sdl::Linear<float>;
 using Sigmoid = sdl::Sigmoid<float>;
 using Softmax = sdl::Softmax<float>;
 using ReLU = sdl::ReLU<float>;
+using Flatten = sdl::Flatten<float>;
 using Sequential = sdl::Sequential<float>;
 using SDG = sdl::SDG<float>;
 using Function = sdlm::Function<float>;
@@ -48,14 +49,14 @@ int main(int argc, char** argv) {
     // to visualize the data, we write the first 10 images to file
     for (int i = 0; i < 10; i++) {
         Tensor X_0 = X.get_values({i});
-        std::cout << "X_0 shape: " << std::endl;
-        X_0.print_shape();
+        // std::cout << "X_0 shape: " << std::endl;
+        // X_0.print_shape();
         // X_0.print();
 
-        std::cout << "X.get_values({" << i << "})" << std::endl;
+        // std::cout << "X.get_values({" << i << "})" << std::endl;
 
         Number y_0 = Y.get_values()[i];
-        std::cout << "y_0: " << y_0 << std::endl;
+        // std::cout << "y_0: " << y_0 << std::endl;
 
         // write X_0 to file
         std::string filename = "X_0_" + std::to_string((int)(y_0.value())) + ".tga";
@@ -63,13 +64,20 @@ int main(int argc, char** argv) {
         sdl::utils::write_tga_image(filename, X_0);
     }
 
+    // use only 1 image for training
+    X = X.get_values({0});
+    Y = Y.get_values({0});
+    std::cout << "X shape: " << std::endl;
+
     // create a simple network
+
+    Flatten* flatten = new Flatten();
     Linear* linear1 = new Linear(784, 128);
     ReLU* act1 = new ReLU();
     Linear* linear2 = new Linear(128, 10);
     Softmax* act2 = new Softmax();
 
-    Sequential simple_network({linear1, act1, linear2, act2});
+    Sequential simple_network({flatten, linear1, act1, linear2, act2});
     
     // get parameters
     std::vector<Number*> parameters = simple_network.get_parameters();
@@ -82,6 +90,9 @@ int main(int argc, char** argv) {
 
     // create optimizer
     SDG sdg(parameters, loss_func, 0.001, 0.9);
+
+    // train the model
+    std::cout << "Training..." << std::endl;
 
     sdg.fit_until_convergence(0.0001);
 

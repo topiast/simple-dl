@@ -423,6 +423,15 @@ class Tensor {
         return result;
     }
 
+    // flattens the last two dimensions
+    Tensor flatten() const {
+        Tensor result;
+        result.m_shape = {m_shape[0], m_shape[1] * m_shape[2]};
+        result.m_data = m_data;
+
+        return result;
+    }
+
     // Activation functions
     Tensor sigmoid() const {
         Tensor result;
@@ -593,10 +602,16 @@ class Tensor {
         }
 
         // get the new shape
+        if (indices.size() == m_shape.size()) {
+            return Tensor<T>(std::vector<T>{m_data[index]}, std::vector<int>{1});
+        }
         std::vector<int> new_shape(m_shape.begin() + indices.size(), m_shape.end());
+
+ 
         Tensor<T> result;
         result.m_shape = new_shape;
-        result.m_data = std::vector<T>(result.m_shape[0] * result.m_shape[1]);
+
+        result.m_data = std::vector<T>(strides[0]);
 
         for (int i = 0; i < strides[0]; ++i) {
             result.m_data[i] = m_data[index + i];

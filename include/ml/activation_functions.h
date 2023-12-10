@@ -69,4 +69,24 @@ public:
 
 };
 
+template <typename T>
+class Flatten : public Module<T> {
+public:
+
+    Flatten() {}
+
+    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.flatten();
+    }
+
+    std::vector<sdlm::Number<T>*> get_parameters() override {
+        return {};
+    }
+
+    std::string get_name() override {
+        return "Flatten";
+    }
+
+};
+
 } // namespace sdl
