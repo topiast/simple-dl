@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <iostream>
-// to get random id
 #include <random>
 #include <limits>
 
@@ -14,25 +13,11 @@ private:
     bool count_gradient = true;
     T m_value;
     T m_gradient;
-    // random id to identify the number
-    u_int16_t id;
 
 public:
-    Number() : m_value(0), m_gradient(0) { 
-        // generate random id
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(0, 65535);
-        id = dis(gen);
-        }
+    Number() : m_value(0), m_gradient(0) {}
     // Number(const T& value) : m_value(value) {}
-    Number(const T& value, const T& gradient = 0) : m_value(value), m_gradient(gradient) {
-        // generate random id
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(0, 65535);
-        id = dis(gen);
-    }
+    Number(const T& value, const T& gradient = 0) : m_value(value), m_gradient(gradient) {}
 
     static Number<T> max() {
         return Number<T>(std::numeric_limits<T>::max());
@@ -66,10 +51,6 @@ public:
 
     T gradient() const {
         return m_gradient;
-    }
-
-    u_int16_t get_id() const {
-        return id;
     }
 
     Number& operator+=(const Number& rhs) {
@@ -472,20 +453,6 @@ Number<T> tan(const Number<T>& x) {
 
 // hash function for Number
 namespace std {
-    template <typename T>
-    struct hash<sdlm::Number<T>> {
-        std::size_t operator()(const sdlm::Number<T>& number) const {
-            // since id is unique, we can use it as hash
-            return number.get_id();
-        }
-    };
-    template <typename T>
-    struct equal_to<sdlm::Number<T>> {
-        bool operator()(const sdlm::Number<T>& lhs, const sdlm::Number<T>& rhs) const {
-            return lhs.get_id() == rhs.get_id();
-        }
-    };
-
     // pow function for Number
     template <typename T>
     sdlm::Number<T> pow(const sdlm::Number<T>& x, const sdlm::Number<T>& y) {

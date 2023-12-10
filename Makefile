@@ -169,6 +169,19 @@ simple_network/fast:
 .PHONY : simple_network/fast
 
 #=============================================================================
+# Target rules for targets named mnist_example
+
+# Build rule for target.
+mnist_example: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mnist_example
+.PHONY : mnist_example
+
+# fast build rule for target.
+mnist_example/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mnist_example.dir/build.make CMakeFiles/mnist_example.dir/build
+.PHONY : mnist_example/fast
+
+#=============================================================================
 # Target rules for targets named test_gradients
 
 # Build rule for target.
@@ -254,6 +267,30 @@ examples/linear_model.s: examples/linear_model.cpp.s
 examples/linear_model.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/linear_model.dir/build.make CMakeFiles/linear_model.dir/examples/linear_model.cpp.s
 .PHONY : examples/linear_model.cpp.s
+
+examples/mnist_example.o: examples/mnist_example.cpp.o
+.PHONY : examples/mnist_example.o
+
+# target to build an object file
+examples/mnist_example.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mnist_example.dir/build.make CMakeFiles/mnist_example.dir/examples/mnist_example.cpp.o
+.PHONY : examples/mnist_example.cpp.o
+
+examples/mnist_example.i: examples/mnist_example.cpp.i
+.PHONY : examples/mnist_example.i
+
+# target to preprocess a source file
+examples/mnist_example.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mnist_example.dir/build.make CMakeFiles/mnist_example.dir/examples/mnist_example.cpp.i
+.PHONY : examples/mnist_example.cpp.i
+
+examples/mnist_example.s: examples/mnist_example.cpp.s
+.PHONY : examples/mnist_example.s
+
+# target to generate assembly for a file
+examples/mnist_example.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mnist_example.dir/build.make CMakeFiles/mnist_example.dir/examples/mnist_example.cpp.s
+.PHONY : examples/mnist_example.cpp.s
 
 examples/simple_network.o: examples/simple_network.cpp.o
 .PHONY : examples/simple_network.o
@@ -385,6 +422,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... gradients"
 	@echo "... linear_model"
+	@echo "... mnist_example"
 	@echo "... simple_network"
 	@echo "... tensor"
 	@echo "... test_gradients"
@@ -396,6 +434,9 @@ help:
 	@echo "... examples/linear_model.o"
 	@echo "... examples/linear_model.i"
 	@echo "... examples/linear_model.s"
+	@echo "... examples/mnist_example.o"
+	@echo "... examples/mnist_example.i"
+	@echo "... examples/mnist_example.s"
 	@echo "... examples/simple_network.o"
 	@echo "... examples/simple_network.i"
 	@echo "... examples/simple_network.s"
