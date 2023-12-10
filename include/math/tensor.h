@@ -542,32 +542,36 @@ class Tensor {
         set_values(indices, {static_cast<T>(args)...});
     }
 
-    // Get values from tensors at specified indices
     Tensor<T> get_values(const std::vector<int>& indices) const {
+        std::vector<int> strides(m_shape.size());
+        strides.back() = 1;
+        for (int i = m_shape.size() - 2; i >= 0; --i) {
+            strides[i] = strides[i + 1] * m_shape[i + 1];
+        }
+
         int index = 0;
-        int stride = 1;
-
-        for (int i = m_shape.size() - 1; i >= 0; --i) {
-            if (indices[i] >= m_shape[i] || indices[i] < 0) {
-                throw std::out_of_range("Index out of bounds");
-            }
-            index += indices[i] * stride;
-            stride *= m_shape[i];
+        for (int i = 0; i < indices.size(); ++i) {
+            index += indices[i] * strides[i];
         }
 
-        std::vector<T> result;
-        for (int i = 0; i < stride; ++i) {
-            result.push_back(m_data[index + i]);
+        // get the new shape
+        std::vector<int> new_shape(m_shape.begin() + indices.size(), m_shape.end());
+        Tensor<T> result;
+        result.m_shape = new_shape;
+        result.m_data = std::vector<T>(result.m_shape[0] * result.m_shape[1]);
+
+        for (int i = 0; i < strides[0]; ++i) {
+            result.m_data[i] = m_data[index + i];
         }
 
-        std::vector<int> shape;
-        for (int i = m_shape.size() - indices.size() - 1; i < m_shape.size() ; ++i) {
-            shape.push_back(m_shape[i]);
-        } 
-
-
-        return Tensor<T>(result, shape);
+        return result;
     }
+
+
+
+
+
+
     
 };
 

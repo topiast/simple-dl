@@ -40,21 +40,23 @@ int main(int argc, char** argv) {
     std::cout << "Y shape: " << std::endl;
     Y.print_shape();
 
-    // X.print();
-    // Y.print();
-    int i = 2;
-    Tensor X_0 = X.get_values({i});
-    std::cout << "X_0 shape: " << std::endl;
-    X_0.print_shape();
-    // X_0.print();
+    // to visualize the data, we write the first 10 images to file
+    for (int i = 0; i < 10; i++) {
+        Tensor X_0 = X.get_values({i});
+        std::cout << "X_0 shape: " << std::endl;
+        X_0.print_shape();
+        // X_0.print();
 
-    Number y_0 = Y.get_values()[i];
-    std::cout << "y_0: " << y_0 << std::endl;
+        std::cout << "X.get_values({" << i << "})" << std::endl;
 
-    // write X_0 to file
-    std::string filename = "X_0_" + std::to_string((int)(y_0.value())) + ".tga";
+        Number y_0 = Y.get_values()[i];
+        std::cout << "y_0: " << y_0 << std::endl;
 
-    sdl::utils::write_tga_image(filename, X_0);
+        // write X_0 to file
+        std::string filename = "X_0_" + std::to_string((int)(y_0.value())) + ".tga";
+
+        sdl::utils::write_tga_image(filename, X_0);
+    }
 
     return 0;
 }
