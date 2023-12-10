@@ -281,11 +281,14 @@ class Tensor {
 
     Tensor matmul(const Tensor& rhs) const {
         if (m_shape.size() != 2 || rhs.m_shape.size() != 2) {
-            throw std::invalid_argument("Incompatible shapes for matrix multiplication");
+            throw std::invalid_argument("Incompatible shapes for matrix multiplication. Tensors must be 2D");
         }
 
         if (m_shape[1] != rhs.m_shape[0]) {
-            throw std::invalid_argument("Incompatible shapes for matrix multiplication");
+            std::string error = "Incompatible shapes for matrix multiplication. ";
+            error += "First tensor has shape " + std::to_string(m_shape[0]) + "x" + std::to_string(m_shape[1]);
+            error += " and second tensor has shape " + std::to_string(rhs.m_shape[0]) + "x" + std::to_string(rhs.m_shape[1]);
+            throw std::invalid_argument(error));
         }
 
         Tensor result;
