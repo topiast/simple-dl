@@ -58,5 +58,12 @@ int main(int argc, char** argv) {
         sdl::utils::write_tga_image(filename, X_0);
     }
 
+    // create a simple network
+    Linear* linear1 = new Linear(784, 128);
+    ReLU* act1 = new ReLU();
+    Linear* linear2 = new Linear(128, 10);
+    Sigmoid* act2 = new Sigmoid();
+    
+
     return 0;
 }
