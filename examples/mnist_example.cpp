@@ -4,6 +4,7 @@
 
 #include "ml/linear.h"
 #include "ml/activation_functions.h"
+#include "ml/loss_functions.h"
 #include "ml/sequential.h"
 #include "ml/sdg.h"
 #include "ml/utils.h"
@@ -15,6 +16,7 @@ using Number = sdlm::Number<float>;
 using Tensor = sdlm::Tensor<Number>;
 using Linear = sdl::Linear<float>;
 using Sigmoid = sdl::Sigmoid<float>;
+using Softmax = sdl::Softmax<float>;
 using ReLU = sdl::ReLU<float>;
 using Sequential = sdl::Sequential<float>;
 using SDG = sdl::SDG<float>;
@@ -40,6 +42,9 @@ int main(int argc, char** argv) {
     std::cout << "Y shape: " << std::endl;
     Y.print_shape();
 
+    // convert Y to one-hot encoding
+    Y = Y.one_hot(10, [](const Number& x) { return static_cast<int>(x.value()); });
+
     // to visualize the data, we write the first 10 images to file
     for (int i = 0; i < 10; i++) {
         Tensor X_0 = X.get_values({i});
@@ -62,8 +67,24 @@ int main(int argc, char** argv) {
     Linear* linear1 = new Linear(784, 128);
     ReLU* act1 = new ReLU();
     Linear* linear2 = new Linear(128, 10);
-    Sigmoid* act2 = new Sigmoid();
+    Softmax* act2 = new Softmax();
+
+    Sequential simple_network({linear1, act1, linear2, act2});
     
+    // get parameters
+    std::vector<Number*> parameters = simple_network.get_parameters();
+
+    Function loss_func(parameters, [&simple_network, &X, &Y]() {
+        Tensor output = simple_network.forward(X);
+        Number loss = sdl::cross_entropy(output, Y);
+        return loss;
+    });
+
+    // create optimizer
+    SDG sdg(parameters, loss_func, 0.001, 0.9);
+
+    sdg.fit_until_convergence(0.0001);
+
 
     return 0;
 }

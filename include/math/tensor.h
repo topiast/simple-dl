@@ -5,6 +5,7 @@
 #include <vector>
 #include <random>
 #include <stdexcept>
+#include <functional>
 
 
 namespace sdlm {
@@ -361,6 +362,30 @@ class Tensor {
         return result;
     }
 
+    Tensor exp() const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            result.m_data[i] = std::exp(result.m_data[i]);
+        }
+
+        return result;
+    }
+
+    Tensor log() const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            result.m_data[i] = std::log(result.m_data[i]);
+        }
+
+        return result;
+    }
+
     Tensor clip(T min, T max) const {
         Tensor result;
         result.m_shape = m_shape;
@@ -383,6 +408,19 @@ class Tensor {
             result += std::pow(std::abs(m_data[i]), p);
         }
         return std::pow(result, T(1) / p);
+    }
+
+    Tensor one_hot(int num_classes, std::function<int(T)> cast) const {
+        Tensor result;
+        result.m_shape = {m_shape[0], num_classes};
+        result.m_data = std::vector<T>(result.m_shape[0] * result.m_shape[1], T(0));
+
+        for (int i = 0; i < m_shape[0]; ++i) {
+            auto index = cast(m_data[i]);
+            result.m_data[i * result.m_shape[1] + index] = T(1);
+        }
+
+        return result;
     }
 
     // Activation functions

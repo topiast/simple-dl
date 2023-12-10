@@ -365,7 +365,6 @@ public:
     }
 
 
-
     // bool operator==(const Number& rhs) const { return m_value == rhs.m_value; }
     // bool operator!=(const Number& rhs) const { return m_value != rhs.m_value; }
     // bool operator<(const Number& rhs) const { return m_value < rhs.m_value; }
@@ -506,7 +505,6 @@ namespace std {
     sdlm::Number<T> abs(const sdlm::Number<T>& x) {
         return sdlm::abs(x);
     }
-
 
 
 } // namespace std
