@@ -67,8 +67,12 @@ public:
 
     void fit_until_convergence(const sdlm::Number<T>& threshold, bool print_loss = true) {
         sdlm::Number<T> total_loss = sdlm::Number<T>::max();
-        sdlm::Number<T> prev_loss = step();
+        sdlm::Number<T> prev_loss = loss_func.compute();
 
+        if (print_loss){
+            std::cout << "Initial loss: " << prev_loss << std::endl;
+        }
+        
         int i = 0;
         while (std::abs(total_loss - prev_loss) > threshold) {
             prev_loss = total_loss;

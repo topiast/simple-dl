@@ -12,16 +12,16 @@
 
 #include <iostream>
 
-using Number = sdlm::Number<float>;
+using Number = sdlm::Number<double>;
 using Tensor = sdlm::Tensor<Number>;
-using Linear = sdl::Linear<float>;
-using Sigmoid = sdl::Sigmoid<float>;
-using Softmax = sdl::Softmax<float>;
-using ReLU = sdl::ReLU<float>;
-using Flatten = sdl::Flatten<float>;
-using Sequential = sdl::Sequential<float>;
-using SDG = sdl::SDG<float>;
-using Function = sdlm::Function<float>;
+using Linear = sdl::Linear<double>;
+using Sigmoid = sdl::Sigmoid<double>;
+using Softmax = sdl::Softmax<double>;
+using ReLU = sdl::ReLU<double>;
+using Flatten = sdl::Flatten<double>;
+using Sequential = sdl::Sequential<double>;
+using SDG = sdl::SDG<double>;
+using Function = sdlm::Function<double>;
 
 // take the path to the mnist dataset as command line argument
 int main(int argc, char** argv) {
@@ -65,26 +65,63 @@ int main(int argc, char** argv) {
     }
 
     // use only 1 image for training
-    X = X.get_values({0});
-    Y = Y.get_values({0});
-    std::cout << "X shape: " << std::endl;
+    X = X.get_values({0}).reshape({1, 28, 28}).normalize(0, 1);
+    Y = Y.get_values({0}).reshape({1, 10});
 
     // create a simple network
 
     Flatten* flatten = new Flatten();
-    Linear* linear1 = new Linear(784, 128);
+    Linear* linear1 = new Linear(784, 32);
     ReLU* act1 = new ReLU();
-    Linear* linear2 = new Linear(128, 10);
-    Softmax* act2 = new Softmax();
+    Linear* linear2 = new Linear(32, 10);
+    Sigmoid* act2 = new Sigmoid();
+    Softmax* output = new Softmax();
 
-    Sequential simple_network({flatten, linear1, act1, linear2, act2});
+    Sequential simple_network({flatten, linear1, act1, linear2, act2, output});
+
+    simple_network.print();
+
+    // print data   
+    std::cout << "Data set: " << std::endl;
+    X.print();
+
+    // forward each layer and print the output shape
+    std::cout << "Forward flatten layer: " << std::endl;
+    Tensor out = flatten->forward(X);
+    out.print();
+
+    std::cout << "Forward linear1 layer: " << std::endl;
+    out = linear1->forward(out);
+    out.print();
+
+    std::cout << "Forward act1 layer: " << std::endl;
+    out = act1->forward(out);
+    out.print();
+
+    std::cout << "Forward linear2 layer: " << std::endl;
+    out = linear2->forward(out);
+    out.print();
+
+    std::cout << "Forward act2 layer: " << std::endl;
+    out = act2->forward(out);
+    out.print();
+
+    std::cout << "Forward output layer: " << std::endl;
+    out = output->forward(out);
+    out.print();
+
+
+
+
     
     // get parameters
     std::vector<Number*> parameters = simple_network.get_parameters();
 
+    std::cout << "Number of parameters: " << parameters.size() << std::endl;
+
     Function loss_func(parameters, [&simple_network, &X, &Y]() {
-        Tensor output = simple_network.forward(X);
-        Number loss = sdl::cross_entropy(output, Y);
+        Tensor out = simple_network.forward(X);
+        Number loss = sdl::cross_entropy(out, Y);
         return loss;
     });
 
@@ -94,7 +131,19 @@ int main(int argc, char** argv) {
     // train the model
     std::cout << "Training..." << std::endl;
 
-    sdg.fit_until_convergence(0.0001);
+    sdg.fit_until_convergence(0.0001, true);
+
+    // print the output of the model
+    std::cout << "Output: " << std::endl;
+    simple_network.forward(X).print();
+
+    // print the target
+    std::cout << "Target: " << std::endl;
+    Y.print();
+
+    // loss after training
+    std::cout << "Loss after training: " << std::endl;
+    std::cout << loss_func.compute() << std::endl;
 
 
     return 0;

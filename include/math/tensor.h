@@ -288,7 +288,7 @@ class Tensor {
             std::string error = "Incompatible shapes for matrix multiplication. ";
             error += "First tensor has shape " + std::to_string(m_shape[0]) + "x" + std::to_string(m_shape[1]);
             error += " and second tensor has shape " + std::to_string(rhs.m_shape[0]) + "x" + std::to_string(rhs.m_shape[1]);
-            throw std::invalid_argument(error));
+            throw std::invalid_argument(error);
         }
 
         Tensor result;
@@ -426,11 +426,59 @@ class Tensor {
         return result;
     }
 
+    Tensor reshape(const std::vector<int>& shape) const {
+        Tensor result;
+        result.m_shape = shape;
+        result.m_data = m_data;
+
+        int size = 1;
+        for (int i = 0; i < shape.size(); ++i) {
+            size *= shape[i];
+        }
+
+        if (size != m_data.size()) {
+            throw std::invalid_argument("Incompatible shapes for reshape");
+        }
+
+        return result;
+    }
+
     // flattens the last two dimensions
     Tensor flatten() const {
         Tensor result;
-        result.m_shape = {m_shape[0], m_shape[1] * m_shape[2]};
+        for (int i = 0; i < m_shape.size() - 2; ++i) {
+            result.m_shape.push_back(m_shape[i]);
+        }
+        result.m_shape.push_back(m_shape[m_shape.size() - 2] * m_shape[m_shape.size() - 1]);
+        
+        // copy data each element at a time
+        result.m_data = std::vector<T>(get_size());
+        for (int i = 0; i < get_size(); ++i) {
+            result.m_data[i] = m_data[i];
+        }
+
+        return result;
+    }
+
+    Tensor normalize(T min = 0, T max = 1) const {
+        Tensor result;
+        result.m_shape = m_shape;
         result.m_data = m_data;
+
+        T min_val = m_data[0];
+        T max_val = m_data[0];
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            if (m_data[i] < min_val) {
+                min_val = m_data[i];
+            }
+            if (m_data[i] > max_val) {
+                max_val = m_data[i];
+            }
+        }
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            result.m_data[i] = (m_data[i] - min_val) / (max_val - min_val) * (max - min) + min;
+        }
 
         return result;
     }
