@@ -1,5 +1,5 @@
 # Doxyfile configuration
-PROJECT_NAME           = "Simple dl and linear algebra library"
+PROJECT_NAME           = "Simple dl and math library"
 OUTPUT_DIRECTORY       = docs
 GENERATE_HTML          = YES
 GENERATE_LATEX         = NO
