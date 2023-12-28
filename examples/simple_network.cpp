@@ -95,7 +95,7 @@ int main() {
     });
 
 
-    SDG sdg(parameters, loss_func, 0.001, 0.9);
+    SDG sdg(parameters, loss_func, 0.001, 0.5);
 
 
     sdg.fit_until_convergence(0.00001);
