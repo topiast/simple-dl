@@ -13,7 +13,7 @@ Linear* linear2 = new Linear(5, 1);
 
 Sequential simple_network({linear1, act1, linear2});
 ```
-We obtain the following graph when fitting it to a linear function:
+The following graph is obtained when fitting the above model to a linear function:
 ![graph](assets/example_traning_plot.png)
 
 
