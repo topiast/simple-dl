@@ -19,12 +19,12 @@ private:
 
 public:
     Linear(int in_features, int out_features) {
-        weights.ones({in_features, out_features});
-        bias.ones({out_features});
+        weights.zeros({in_features, out_features});
+        bias.zeros({1, out_features});
     }
 
     Tensor forward(const Tensor& input) {
-        return input.matmul(weights) + bias;
+        return input.matmul(weights).row_add(bias);
     }
 
     Tensor get_weights() {
