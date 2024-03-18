@@ -66,8 +66,11 @@ int main() {
     // create a simple network
     Linear* linear1 = new Linear(2, 10);
     ReLU* act1 = new ReLU();
+    // Sigmoid* act1 = new Sigmoid();
     Linear* linear2 = new Linear(10, 1);
     ReLU* act2 = new ReLU();
+    // Sigmoid* act2 = new Sigmoid();
+    
     
     Sequential simple_network({linear1, act1, linear2});
 

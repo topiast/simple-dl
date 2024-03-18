@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     Linear* linear1 = new Linear(784, 32);
     ReLU* act1 = new ReLU();
     Linear* linear2 = new Linear(32, 10);
-    Sigmoid* act2 = new Sigmoid();
+    ReLU* act2 = new ReLU();
     Softmax* output = new Softmax();
 
     Sequential simple_network({flatten, linear1, act1, linear2, act2, output});

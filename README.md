@@ -27,8 +27,6 @@ Given the following network:
 Linear* linear1 = new Linear(2, 10);
 ReLU* act1 = new ReLU();
 Linear* linear2 = new Linear(10, 1);
-ReLU* act2 = new ReLU();
-// Sigmoid* act2 = new Sigmoid();
 
 
 Sequential simple_network({linear1, act1, linear2});
@@ -37,6 +35,25 @@ The following graph is obtained when fitting the above model to the XOR function
 ![graph](assets/example_training_xor.png)
 
 **See the example in the `example/simple_network_xor.cpp` file.**
+
+### MNIST fitting
+
+Given the following network:    
+```cpp
+    Flatten* flatten = new Flatten();
+    Linear* linear1 = new Linear(784, 32);
+    ReLU* act1 = new ReLU();
+    Linear* linear2 = new Linear(32, 10);
+    ReLU* act2 = new ReLU();
+    Softmax* output = new Softmax();
+
+    Sequential simple_network({flatten, linear1, act1, linear2, act2, output});
+```
+
+The following graph is obtained when fitting the above model to a single data point from the MNIST dataset:
+![graph](assets/example_training_mnist.png)
+
+**See the example in the `example/mnist_example.cpp` file.**
 
 ## Build
 ```bash
