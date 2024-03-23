@@ -490,7 +490,9 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = (T(1) / (T(1) + (-result.m_data[i]).exp()));
+            // This is hacky, but it works for now
+            result.m_data[i]++;
+            result.m_data[i] = ((std::exp(-result.m_data[i]))).pow(-1);
         }
 
         return result;
@@ -522,6 +524,18 @@ class Tensor {
         for (size_t i = 0; i < m_data.size(); ++i) {
             // so that the gradient is correct
             result.m_data[i] = result.m_data[i].relu();
+        }
+
+        return result;
+    }
+
+    Tensor tanh() const {
+        Tensor result;
+        result.m_shape = m_shape;
+        result.m_data = m_data;
+
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            result.m_data[i] = (std::exp(result.m_data[i]) - std::exp(-result.m_data[i])) / (std::exp(result.m_data[i]) + std::exp(-result.m_data[i]));
         }
 
         return result;

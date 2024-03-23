@@ -15,6 +15,7 @@ using Tensor = sdlm::Tensor<Number>;
 using Linear = sdl::Linear<double>;
 using Sigmoid = sdl::Sigmoid<double>;
 using ReLU = sdl::ReLU<double>;
+using Tanh = sdl::Tanh<double>;
 using Sequential = sdl::Sequential<double>;
 using SDG = sdl::SDG<double>;
 using Function = sdlm::Function<double>;
@@ -62,15 +63,19 @@ int main() {
     std::cout << "Data set: " << std::endl;
     X.print();
 
+    // print Y
+    std::cout << "Target: " << std::endl;
+    Y.print();
+
 
     // create a simple network
     Linear* linear1 = new Linear(2, 10);
-    ReLU* act1 = new ReLU();
-    // Sigmoid* act1 = new Sigmoid();
+    // ReLU* act1 = new ReLU();
+    // Tanh* act1 = new Tanh();
+    Sigmoid* act1 = new Sigmoid();
     Linear* linear2 = new Linear(10, 1);
     ReLU* act2 = new ReLU();
     // Sigmoid* act2 = new Sigmoid();
-    
     
     Sequential simple_network({linear1, act1, linear2});
 
@@ -107,11 +112,11 @@ int main() {
     });
 
 
-    SDG sdg(parameters, loss_func, 0.001, 0.9);
+    SDG sdg(parameters, loss_func, 0.01, 0.9);
 
 
     sdg.fit_until_convergence(0.00001);
-    // sdg.fit(1000, true);
+    // sdg.fit(50, true);
 
     // print Y
     std::cout << "Target: " << std::endl;

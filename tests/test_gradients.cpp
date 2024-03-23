@@ -257,6 +257,36 @@ TEST(TestGradients, TestFunctionValuesAndGradientsComplicated) {
 
     }
 }
+// // test sigmoid
+// TEST(TestGradients, TestFunctionValuesAndGradientsSigmoid) {
+//     std::vector<Number*> variables;
+//     Number a = rand() % 10;
+
+//     std::cout << "a: " << a << std::endl;
+
+//     variables.push_back(&a);
+
+
+
+//     sdlm::Function<float> func(variables, [&variables]() {
+//         return Number(1) / (Number(1) + sdlm::exp(-(*variables[0]))); 
+//     });
+
+//     float value = 1 / (1 + std::exp(-a.value()));
+
+//     for (int i = 0; i < variables.size(); i++) {
+//         Number result = func.derivative(variables[i]);
+
+//         // Test values
+//         EXPECT_FLOAT_EQ(result.value(), value );
+
+//         // Test gradients
+//         // Adjust these assertions based on the expected gradient values for your function
+//         EXPECT_FLOAT_EQ(result.gradient(), (value) * (1 - value));
+//     }
+
+// }
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

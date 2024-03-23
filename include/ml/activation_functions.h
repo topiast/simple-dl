@@ -69,6 +69,27 @@ public:
 
 };
 
+// tanh
+template <typename T>
+class Tanh : public Module<T> {
+public:
+
+    Tanh() {}
+
+    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.tanh();
+    }
+
+    std::vector<sdlm::Number<T>*> get_parameters() override {
+        return {};
+    }
+
+    std::string get_name() override {
+        return "Tanh";
+    }
+
+};
+
 template <typename T>
 class Flatten : public Module<T> {
 public:
