@@ -1,23 +1,50 @@
 #pragma once
 
+#include "math/backoperator.h"
+
 #include <cmath>
 #include <iostream>
 #include <random>
 #include <limits>
+#include <typeinfo>
+#include <vector>
 
 namespace sdlm {
 
 template <typename T>
+class Operator;
+
+template <typename T>
 class Number {
 private:
+    Operator<T>* grad_fn = nullptr;
     bool count_gradient = true;
+    bool is_leaf = true;
     T m_value;
     T m_gradient;
 
+    // Operator<T>* set_up_operator(const Number<T>& x) {
+
+    //     std::vector<Number<T>*> saved_numbers = {this, &x};
+    //     std::vector<Operator<T>*> next_operators = {grad_fn, x.grad_fn};
+
+    //     return new Operator<T>(saved_numbers, next_operators);
+    // }
+
 public:
-    Number() : m_value(0), m_gradient(0) {}
+    Number() : m_value(0), m_gradient(0) {
+        // grad_fn = new AccumulateGrad<T>({this});
+    }
     // Number(const T& value) : m_value(value) {}
-    Number(const T& value, const T& gradient = 0) : m_value(value), m_gradient(gradient) {}
+    Number(const T& value, const T& gradient = 0) : m_value(value), m_gradient(gradient) {
+        // grad_fn = new AccumulateGrad<T>({this});
+    }
+
+    Number(const T& value, bool count_gradient, bool is_leaf) : m_value(value), count_gradient(count_gradient), is_leaf(is_leaf) {}
+
+    ~Number() {
+        // delete grad_fn;
+    }
 
     static Number<T> max() {
         return Number<T>(std::numeric_limits<T>::max());
@@ -49,462 +76,492 @@ public:
         m_gradient = gradient;
     }
 
+    void set_leaf(bool is_leaf) {
+        this->is_leaf = is_leaf;
+    }
+
+    void set_grad_fn(Operator<T>* grad_fn) {
+        if (this->grad_fn != nullptr) {
+            delete this->grad_fn;
+        }
+        this->grad_fn = grad_fn;
+    }
+
     T gradient() const {
         return m_gradient;
     }
 
-    Number& operator+=(const Number& rhs) {
+    Number<T> operator+(Number<T>& rhs) {
+        Number<T> result(m_value + rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        AddBack<T>* op = new AddBack<T>(next_operators);
+        result.set_grad_fn(op);
+        
+        return result;
+    }
+
+    Number<T> operator+(Number<T>&& rhs) {
+        Number<T> result(m_value + rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        AddBack<T>* op = new AddBack<T>(next_operators);
+        result.set_grad_fn(op);
+        
+        return result;
+    }
+
+    // OPERATOR * 
+    Number<T> operator*(Number<T>& rhs) {
+        Number<T> result(m_value * rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        std::vector<T> saved_values = {m_value, rhs.m_value};
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        MulBack<T>* op = new MulBack<T>(saved_values, next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+    Number<T> operator*(Number<T>&& rhs) {
+        Number<T> result(m_value * rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+        std::vector<T> saved_values = {m_value, rhs.m_value};
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        MulBack<T>* op = new MulBack<T>(saved_values, next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+    // OPERATOR *
+
+    // OPERATOR /
+    Number<T> operator/(Number<T>& rhs) {
+        Number<T> result(m_value / rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        std::vector<T> saved_values = {m_value, rhs.m_value};
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        DivBack<T>* op = new DivBack<T>(saved_values, next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+
+    Number<T> operator/(Number<T>&& rhs) {
+        Number<T> result(m_value / rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        std::vector<T> saved_values = {m_value, rhs.m_value};
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        DivBack<T>* op = new DivBack<T>(saved_values, next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+    // OPERATOR /
+
+    // OPERATOR -
+    Number<T> operator-(Number<T>& rhs) {
+        Number<T> result(m_value - rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        SubBack<T>* op = new SubBack<T>(next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+
+    Number<T> operator-(Number<T>&& rhs) {
+        Number<T> result(m_value - rhs.m_value);
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        SubBack<T>* op = new SubBack<T>(next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+    // OPERATOR -
+
+    // OPERATOR unary -
+    Number<T> operator-() {
+        Number<T> result(-m_value);
+
         if (count_gradient){
-            m_gradient += rhs.m_gradient;
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        m_value += rhs.m_value;
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
 
-        return *this;
+        NegBack<T>* op = new NegBack<T>(next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+    // OPERATOR unary -
+
+    // POWER
+    Number<T> pow(const Number<T>& rhs) {
+        Number<T> result(std::pow(m_value, rhs.m_value));
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        std::vector<T> saved_values = {m_value, rhs.m_value};
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        PowBack<T>* op = new PowBack<T>(saved_values, next_operators);
+        result.set_grad_fn(op);
+
+        return result;
     }
 
-    Number& operator-=(const Number& rhs) {
+    Number<T> pow(const Number<T>&& rhs) {
+        Number<T> result(std::pow(m_value, rhs.m_value));
+
+        if (count_gradient || rhs.count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
+        }
+
+        std::vector<T> saved_values = {m_value, rhs.m_value};
+
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        if (rhs.is_leaf && rhs.grad_fn == nullptr) {
+            rhs.set_grad_fn(new AccumulateGrad<T>(&rhs));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn, rhs.grad_fn};
+
+        PowBack<T>* op = new PowBack<T>(saved_values, next_operators);
+        result.set_grad_fn(op);
+
+        return result;
+    }
+
+    Number<T> pow(const T& rhs) {
+        Number<T> result(std::pow(m_value, rhs));
+
         if (count_gradient){
-            m_gradient -= rhs.m_gradient;
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        m_value -= rhs.m_value;
+        std::vector<T> saved_values = {m_value, rhs};
 
-        return *this;
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
+
+        PowBack<T>* op = new PowBack<T>(saved_values, next_operators);
+        result.set_grad_fn(op);
+
+        return result;
     }
+    // POWER
 
-    Number& operator*=(const Number& rhs) {
+    // EXP
+    Number<T> exp() {
+        Number<T> result(std::exp(m_value));
+
         if (count_gradient){
-            m_gradient = m_gradient * rhs.m_value + m_value * rhs.m_gradient;
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        m_value *= rhs.m_value;
-
-
-        return *this;
-    }
-
-    Number& operator/=(const Number& rhs) {
-        if (count_gradient) {
-            m_gradient = (m_gradient * rhs.m_value - m_value * rhs.m_gradient) / (rhs.m_value * rhs.m_value);
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
         }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
 
-        m_value /= rhs.m_value;
-
-        return *this;
-    }
-
-    // Activation functions
-
-    Number relu() const {
-        Number result(*this);
-        if (count_gradient) {
-            if (result.m_value < 0) {
-                result.m_gradient = 0;
-            }
-        }
-
-        result.m_value = std::max(T(0), result.m_value);
+        ExpBack<T>* op = new ExpBack<T>(next_operators);
+        result.set_grad_fn(op);
 
         return result;
     }
+    // EXP
 
-    // Activation functions
+    // LOG
+    Number<T> log() {
+        Number<T> result(std::log(m_value));
 
-    Number clip(const T& min, const T& max) const {
-        Number result(*this);
-        if (count_gradient) {
-            if (result.m_value < min || result.m_value > max) {
-                result.m_gradient = 0;
-            }
+        if (count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        result.m_value = std::max(min, std::min(result.m_value, max));
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
+
+        LogBack<T>* op = new LogBack<T>(next_operators);
+        result.set_grad_fn(op);
 
         return result;
     }
+    // LOG
 
-    Number abs() const {
-        Number result(*this);
-        if (count_gradient) {
-            if (result.m_value < 0) {
-                result.m_gradient = -result.m_gradient;
-            }
+    // SQRT
+    Number<T> sqrt() {
+        Number<T> result(std::sqrt(m_value));
+
+        if (count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        result.m_value = std::abs(result.m_value);
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
+
+        SqrtBack<T>* op = new SqrtBack<T>(next_operators);
+        result.set_grad_fn(op);
 
         return result;
     }
+    // SQRT
 
-    Number pow(const Number& rhs) const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = result.m_gradient * rhs.m_value * std::pow(result.m_value, rhs.m_value - 1);
+    // SIN
+    Number<T> sin() {
+        Number<T> result(std::sin(m_value));
+
+        if (count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        result.m_value = std::pow(result.m_value, rhs.m_value);
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
+
+        SinBack<T>* op = new SinBack<T>(next_operators);
+        result.set_grad_fn(op);
 
         return result;
     }
+    // SIN
 
-    Number pow_inv_for_grad(const Number& rhs) const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = std::pow(result.m_value, rhs.m_value) * std::log(rhs.m_value) * rhs.m_gradient;
+    // COS
+    Number<T> cos() {
+        Number<T> result(std::cos(m_value));
+
+        if (count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        result.m_value = std::pow(result.m_value, rhs.m_value);
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
+
+        CosBack<T>* op = new CosBack<T>(next_operators);
+        result.set_grad_fn(op);
 
         return result;
     }
+    // COS
 
-    Number sqrt() const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = result.m_gradient / (2 * std::sqrt(result.m_value));
+    // TAN
+    Number<T> tan() {
+        Number<T> result(std::tan(m_value));
+
+        if (count_gradient){
+            result.set_leaf(false);
+        } else {
+            result.set_count_gradient(false);
         }
 
-        result.m_value = std::sqrt(result.m_value);
+        if (is_leaf && grad_fn == nullptr) {
+            set_grad_fn(new AccumulateGrad<T>(this));
+        }
+        std::vector<Operator<T>*> next_operators = {grad_fn};
+
+        TanBack<T>* op = new TanBack<T>(next_operators);
+        result.set_grad_fn(op);
 
         return result;
     }
-
-    Number exp() const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = result.m_gradient * std::exp(result.m_value);
-        }
-
-        result.m_value = std::exp(result.m_value);
-
-        return result;
-    }
-
-    Number log() const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = result.m_gradient / result.m_value;
-        }
-
-        result.m_value = std::log(result.m_value);
-
-        return result;
-    }
-
-    Number log10() const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = result.m_gradient / (result.m_value * std::log(10));
-        }
-
-        result.m_value = std::log10(result.m_value);
-
-        return result;
-    }
-
-    Number sin() const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = result.m_gradient * std::cos(result.m_value);
-        }
-
-        result.m_value = std::sin(result.m_value);
-
-        return result;
-    }
-
-    Number cos() const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = -result.m_gradient * std::sin(result.m_value);
-        }
-
-        result.m_value = std::cos(result.m_value);
-
-        return result;
-    }
-
-    Number tan() const {
-        Number result(*this);
-        if (count_gradient) {
-            result.m_gradient = result.m_gradient / (std::cos(result.m_value) * std::cos(result.m_value));
-        }
-
-        result.m_value = std::tan(result.m_value);
-
-        return result;
-    }
-
+    // TAN
     
 
-    Number& operator%=(const Number& rhs) {
-        m_value %= rhs.m_value;
 
-        return *this;
-    }
 
-    Number& operator&=(const Number& rhs) {
-        m_value &= rhs.m_value;
-        return *this;
-    }
 
-    Number& operator|=(const Number& rhs) {
-        m_value |= rhs.m_value;
-        return *this;
-    }
 
-    Number& operator^=(const Number& rhs) {
-        m_value ^= rhs.m_value;
-        return *this;
-    }
-
-    Number& operator<<=(const Number& rhs) {
-        m_value <<= rhs.m_value;
-        return *this;
-    }
-
-    Number& operator>>=(const Number& rhs) {
-        m_value >>= rhs.m_value;
-        return *this;
-    }
-
-    Number& operator++() {
-        ++m_value;
-        return *this;
-    }
-
-    Number& operator--() {
-        --m_value;
-        return *this;
-    }
-
-    Number operator++(int) {
-        Number tmp(*this);
-        ++m_value;
-        return tmp;
-    }
-
-    Number operator--(int) {
-        Number tmp(*this);
-        --m_value;
-        return tmp;
-    }
-
-    Number operator+() const { 
-        Number result = Number(*this);
-        return result; 
+    void debug_print() {
+        std::cout << "Value: " << m_value << std::endl;
+        std::cout << "Gradient: " << m_gradient << std::endl;
+        std::cout << "Is leaf: " << is_leaf << std::endl;
+        std::cout << "Count gradient: " << count_gradient << std::endl;
+        std::cout << "Grad fn: ";
+        if (grad_fn != nullptr) {
+            grad_fn->print();
+        } else {
+            std::cout << "None" << std::endl;
         }
-    Number operator-() const {
-        Number result = Number(*this);
-        if (count_gradient) {
-            result.m_gradient = -result.m_gradient;
-        }
-
-        result.m_value = -result.m_value;
-        return result; 
     }
 
-    Number operator+(const Number& rhs) const { 
-        Number result = Number(*this) += rhs;
-        return result; 
-    }
-    Number operator-(const Number& rhs) const {
-        Number result = Number(*this) -= rhs;
-        return result; 
-    }
-    Number operator*(const Number& rhs) const {
-        Number result = Number(*this) *= rhs;
-        return result; 
-    }
-    Number operator/(const Number& rhs) const {
-        Number result = Number(*this) /= rhs;
-        return result; 
-    }
-    Number operator%(const Number& rhs) const {
-        Number result = Number(*this) %= rhs;
-        return result; 
-    }
-    Number operator&(const Number& rhs) const {
-        Number result = Number(*this) &= rhs;
-        return result; 
-    }
-    Number operator|(const Number& rhs) const {
-        Number result = Number(*this) |= rhs;
-        return result; 
-    }
-    Number operator^(const Number& rhs) const {
-        Number result = Number(*this) ^= rhs;
-        return result; 
-    }
-    Number operator<<(const Number& rhs) const {
-        Number result = Number(*this) <<= rhs;
-        return result; 
-    }
-    Number operator>>(const Number& rhs) const {
-        Number result = Number(*this) >>= rhs;
-        return result; 
-    }
-    bool operator<(const Number& rhs) const { return m_value < rhs.m_value; }
-    bool operator>(const Number& rhs) const { return m_value > rhs.m_value; }
-    bool operator<=(const Number& rhs) const { return m_value <= rhs.m_value; }
-    bool operator>=(const Number& rhs) const { return m_value >= rhs.m_value; }
-    bool operator==(const Number& rhs) const { return m_value == rhs.m_value; }
-    bool operator!=(const Number& rhs) const { return m_value != rhs.m_value; }
-    bool operator&&(const Number& rhs) const { return m_value && rhs.m_value; }
-    bool operator||(const Number& rhs) const { return m_value || rhs.m_value; }
-    bool operator!() const { return !m_value; }
-    bool operator~() const { return ~m_value; }
-
-    // copy assignment
-    Number& operator=(const Number& rhs) {
-        // std::cout << "copy assignment" << std::endl;
+    Number<T>& operator=(const Number<T>& rhs) {
         m_value = rhs.m_value;
         m_gradient = rhs.m_gradient;
+        grad_fn = rhs.grad_fn->clone();
+        count_gradient = rhs.count_gradient;
+        is_leaf = rhs.is_leaf;
+
         return *this;
     }
 
+    Number<T> operator=(const T& rhs) {
+        m_value = rhs;
+        m_gradient = 0;
+        grad_fn = nullptr;
+        count_gradient = true;
+        is_leaf = true;
 
-    // bool operator==(const Number& rhs) const { return m_value == rhs.m_value; }
-    // bool operator!=(const Number& rhs) const { return m_value != rhs.m_value; }
-    // bool operator<(const Number& rhs) const { return m_value < rhs.m_value; }
-    // bool operator>(const Number& rhs) const { return m_value > rhs.m_value; }
-    // bool operator<=(const Number& rhs) const { return m_value <= rhs.m_value; }
-    // bool operator>=(const Number& rhs) const { return m_value >= rhs.m_value; }
-
-
-
-
-
-    friend std::ostream& operator<<(std::ostream& os, const Number& number) {
-        os << number.m_value;
-        return os;
+        return *this;
     }
 
-    friend std::istream& operator>>(std::istream& is, Number& number) {
-        is >> number.m_value;
-        return is;
+    void backward(T gradient = 1) {
+        if (grad_fn == nullptr) {
+            return;
+        }
+        m_gradient = gradient;
+
+
+        grad_fn->evaluate(m_gradient);
     }
-
-
 };
 
-
-template <typename T>
-Number<T> abs(const Number<T>& x) {
-    // copy x
-    Number<T> result = x;
-    return result.abs();
-}
-
-template <typename T>
-Number<T> pow(const Number<T>& x, const Number<T>& y) {
-    Number<T> result = x;
-
-    return y.gradient() == 0 ? result.pow(y) : result.pow_inv_for_grad(y) ;
-}
-
-template <typename T>
-Number<T> sqrt(const Number<T>& x) {
-    Number<T> result = x;
-    return result.sqrt();
-}
-
-template <typename T>
-Number<T> exp(const Number<T>& x) {
-    Number<T> result = x;
-    return result.exp();
-}
-
-template <typename T>
-Number<T> log(const Number<T>& x) {
-    Number<T> result = x;
-    return result.log();
-}
-
-template <typename T>
-Number<T> log10(const Number<T>& x) {
-    Number<T> result = x;
-    return result.log10();
-}
-
-template <typename T>
-Number<T> sin(const Number<T>& x) {
-    Number<T> result = x;
-    return result.sin();
-}
-
-template <typename T>
-Number<T> cos(const Number<T>& x) {
-    Number<T> result = x;
-    return result.cos();
-}
-
-template <typename T>
-Number<T> tan(const Number<T>& x) {
-    Number<T> result = x;
-    return result.sin() / result.cos();
-}
-
-
-
 } // namespace sdlm
-
-// hash function for Number
-namespace std {
-    // pow function for Number
-    template <typename T>
-    sdlm::Number<T> pow(const sdlm::Number<T>& x, const sdlm::Number<T>& y) {
-        return sdlm::pow(x, y);
-    }
-
-    // sqrt function for Number
-    template <typename T>
-    sdlm::Number<T> sqrt(const sdlm::Number<T>& x) {
-        return sdlm::sqrt(x);
-    }
-
-    // exp function for Number
-    template <typename T>
-    sdlm::Number<T> exp(const sdlm::Number<T>& x) {
-        return sdlm::exp(x);
-    }
-
-    // log function for Number
-    template <typename T>
-    sdlm::Number<T> log(const sdlm::Number<T>& x) {
-        return sdlm::log(x);
-    }
-
-    // log10 function for Number
-    template <typename T>
-    sdlm::Number<T> log10(const sdlm::Number<T>& x) {
-        return sdlm::log10(x);
-    }
-
-    // sin function for Number
-    template <typename T>
-    sdlm::Number<T> sin(const sdlm::Number<T>& x) {
-        return sdlm::sin(x);
-    }
-
-    // cos function for Number
-    template <typename T>
-    sdlm::Number<T> cos(const sdlm::Number<T>& x) {
-        return sdlm::cos(x);
-    }
-
-    // tan function for Number
-    template <typename T>
-    sdlm::Number<T> tan(const sdlm::Number<T>& x) {
-        return sdlm::tan(x);
-    }
-
-    // abs function for Number
-    template <typename T>
-    sdlm::Number<T> abs(const sdlm::Number<T>& x) {
-        return sdlm::abs(x);
-    }
-
-
-} // namespace std
