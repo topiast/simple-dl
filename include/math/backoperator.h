@@ -5,6 +5,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 namespace sdlm {
 
@@ -13,363 +14,387 @@ class Number;
 
 template <typename T>
 class Operator {
-    public:
-        virtual void evaluate(const T& x) const = 0;
-        virtual void print() const = 0;
-        virtual Operator<T>* clone() const = 0;
-        virtual ~Operator() {}
+public:
+    virtual void evaluate(const T& x) const = 0;
+    virtual void print() const = 0;
+    virtual ~Operator() {
+        // std::cout << "Operator destructor" << std::endl;
+    }
 
-        void debug_evalutate(const T& x) const {
-            // check if member variables are set
-            std::cout << "m_saved_values.size(): " << m_saved_values.size() << std::endl;
-            std::cout << "m_next_operators.size(): " << m_next_operators.size() << std::endl;
-            evaluate(x);
+    void debug_evalutate(const T& x) const {
+        // check if member variables are set
+        std::cout << "m_saved_values.size(): " << m_saved_values.size() << std::endl;
+        std::cout << "m_next_operators.size(): " << m_next_operators.size() << std::endl;
+        evaluate(x);
+    }
+
+    // void set(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) {
+    //     m_saved_values = saved_values;
+    //     m_next_operators = next_operators;
+    // }
+
+    virtual void zero_grad() {
+        for (const std::shared_ptr<Operator<T>>& next_operator : m_next_operators) {
+            if (next_operator != nullptr) {
+                // print the number of references the shared pointer has
+                // std::cout << next_operator.use_count() << std::endl;
+                next_operator->zero_grad();
+            }
         }
+    }
 
-
-        void set(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) {
-            m_saved_values = saved_values;
-            m_next_operators = next_operators;
+    void next_evaluate(const int i, const T& x) const {
+        if (i >= m_next_operators.size()) {
+            std::cout << "Error: next operator index out of range" << std::endl;
+            return;
         }
-
-        Operator<T>& operator=(const Operator<T>& rhs) {
-            m_saved_values = rhs.m_saved_values;
-            m_next_operators = rhs.m_next_operators;
-
-            return *this;
+        auto next_operator = m_next_operators[i];
+        if (next_operator != nullptr) {
+            next_operator->evaluate(x);
         }
+    }
 
+    Operator<T>& operator=(const Operator<T>& rhs) {
+        m_saved_values = rhs.m_saved_values;
+        m_next_operators = rhs.m_next_operators;
 
+        std::cout << "Operator copy called" << std::endl;
 
-    protected:
-        std::vector<T> m_saved_values;
-        std::vector<Operator<T>*> m_next_operators;
+        return *this;
+    }
 
-        // Operator() {}
-        Operator(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : m_saved_values(saved_values), m_next_operators(next_operators) {}
-
-        // copy constructor
-        Operator(const Operator<T>& other) {
-            m_saved_values = other.m_saved_values;
-            m_next_operators = other.m_next_operators;
+    void visualize() const {
+        std::cout << "Operator ";
+        print();
+        for (int i = 0; i < m_saved_values.size(); i++) {
+            std::cout << "  " << m_saved_values[i];
         }
+        std::cout << "--" << std::endl;
+        for (const std::shared_ptr<Operator<T>>& next_operator : m_next_operators) {
+            // std::cout << " -> ";
+            if (next_operator != nullptr) {
+                next_operator->visualize();
+            } else {
+                std::cout << "nullptr" << std::endl;
+            }
+        }
+    }
 
+protected:
+    std::vector<T> m_saved_values;
+    std::vector<std::shared_ptr<Operator<T>>> m_next_operators;
+
+    Operator(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : m_saved_values(saved_values), m_next_operators(next_operators) {}
+
+    Operator(const Operator<T>& other) : m_saved_values(other.m_saved_values), m_next_operators(other.m_next_operators) {}
 };
 
 template <typename T>
-class AccumulateGrad: public Operator<T> { 
-    private:
-        Number<T>* m_variable;
-    public:
-        AccumulateGrad(Number<T>* variable) : Operator<T>(std::vector<T>(), std::vector<Operator<T>*>()), m_variable(variable) {}
-        // AccumulateGrad() {}
-        ~AccumulateGrad() {}
-        // copy constructor
-        AccumulateGrad(const AccumulateGrad<T>& other) : Operator<T>(other) {
-            m_variable = other.m_variable;
-        }
+class AccumulateGrad : public Operator<T> {
+private:
+    Number<T>* m_variable;
 
-        void evaluate(const T& x) const override {
-            m_variable->set_gradient(m_variable->gradient() + x);
-            std::cout << "Setting grad for " << m_variable->value() << " to " << m_variable->gradient() << std::endl;
-        }
+public:
+    AccumulateGrad(Number<T>* variable)
+        : Operator<T>(std::vector<T>(), std::vector<std::shared_ptr<Operator<T>>>()), m_variable(variable) {}
+    ~AccumulateGrad() {
 
-        void print() const override {
-            std::cout << "AccumulateGrad" << std::endl;
-        }
+        std::cout << "AccumulateGrad destructor" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new AccumulateGrad<T>(*this);
-        }
+
+    void evaluate(const T& x) const override {
+        m_variable->set_gradient(m_variable->gradient() + x);
+    }
+
+    void print() const override {
+        std::cout << "AccumulateGrad" << std::endl;
+    }
+
+    void zero_grad() override {
+        m_variable->set_gradient(0);
+    }
 };
 
 template <typename T>
-class MulBack: public Operator<T> { 
-    public:
-        MulBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // MulBack() {}
-        ~MulBack() {}
+class MulBack : public Operator<T> {
+public:
+    MulBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~MulBack() {}
 
-        void evaluate(const T& x) const override {
-            auto saved_values = this->m_saved_values; 
-            auto next_operators = this->m_next_operators; 
 
-            auto n0 = saved_values[0];
-            auto n1 = saved_values[1];
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(n1 * x);
-            next_operators[1]->evaluate(n0 * x);
-        }
+        auto n0 = saved_values[0];
+        auto n1 = saved_values[1];
 
-        void print() const override {
-            std::cout << "MulBack" << std::endl;
-        }
+        this->next_evaluate(0, n1 * x);
+        this->next_evaluate(1, n0 * x);
+    }
 
-        Operator<T>* clone() const override {
-            return new MulBack<T>(*this);
-        }
+    void print() const override {
+        std::cout << "MulBack" << std::endl;
+    }
 };
 
 template <typename T>
-class DivBack: public Operator<T> { 
-    public:
-        DivBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // DivBack() {}
-        ~DivBack() {}
+class DivBack : public Operator<T> {
+public:
+    DivBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~DivBack() {}
 
-        void evaluate(const T& x) const override {
-            auto saved_values = this->m_saved_values; 
-            auto next_operators = this->m_next_operators; 
 
-            auto n0 = saved_values[0]; // numerator
-            auto n1 = saved_values[1]; // denominator
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(x / n1);
-            next_operators[1]->evaluate(-x * n0 / (n1 * n1));
-        }
+        auto n0 = saved_values[0]; // numerator
+        auto n1 = saved_values[1]; // denominator
 
-        void print() const override {
-            std::cout << "DivBack" << std::endl;
-        }
+        this->next_evaluate(0, x / n1);
+        this->next_evaluate(1, -x * n0 / (n1 * n1));
+    }
 
-        Operator<T>* clone() const override {
-            return new DivBack<T>(*this);
-        }
+    void print() const override {
+        std::cout << "DivBack" << std::endl;
+    }
 };
-
 template <typename T>
 class AddBack: public Operator<T> { 
-    public:
-        AddBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        AddBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~AddBack() {}
+public:
+    AddBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    // without saved_values
+    AddBack(const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(std::vector<T>(), next_operators) {}
+    ~AddBack() {}
 
-        void evaluate(const T& x) const override {
+    void evaluate(const T& x) const override {
+        this->next_evaluate(0, x);
+        this->next_evaluate(1, x);
+    }
 
+    void print() const override {
+        std::cout << "AddBack" << std::endl;
+    }
 
-            this->m_next_operators[0]->evaluate(x);
-            this->m_next_operators[1]->evaluate(x);
-        }
-
-        void print() const override {
-            std::cout << "AddBack" << std::endl;
-        }
-
-        Operator<T>* clone() const override {
-            return new AddBack<T>(*this);
-        }
 };
 
 template <typename T>
 class SubBack: public Operator<T> { 
-    public:
-        SubBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        SubBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~SubBack() {}
+public:
+    SubBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    // without saved_values
+    SubBack(const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(std::vector<T>(), next_operators) {}
+    ~SubBack() {}
 
-        void evaluate(const T& x) const override {
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        this->next_evaluate(0, x);
+        this->next_evaluate(1, -x);
+    }
 
-            next_operators[0]->evaluate(x);
-            next_operators[1]->evaluate(-x);
-        }
+    void print() const override {
+        std::cout << "SubBack" << std::endl;
+    }
 
-        void print() const override {
-            std::cout << "SubBack" << std::endl;
-        }
-
-        Operator<T>* clone() const override {
-            return new SubBack<T>(*this);
-        }
 };
-
 template <typename T>
 class NegBack: public Operator<T> { 
-    public:
-        NegBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        NegBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~NegBack() {}
+public:
+    NegBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    // without saved_values
+    NegBack(const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(std::vector<T>(), next_operators) {}
+    ~NegBack() {}
 
-        void evaluate(const T& x) const override {
-            this->m_next_operators[0]->evaluate(-x);
-        }
+    void evaluate(const T& x) const override {
+        this->next_evaluate(0, -x);
+    }
 
-        void print() const override {
-            std::cout << "NegBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "NegBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new NegBack<T>(*this);
-        }
 };
 
 template <typename T>
 class PowBack: public Operator<T> { 
-    public:
-        PowBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        PowBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~PowBack() {}
+public:
+    PowBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~PowBack() {}
 
-        void evaluate(const T& x) const override {
-            auto saved_values = this->m_saved_values; 
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values; 
 
-            auto n0 = saved_values[0]; // base
-            auto n1 = saved_values[1]; // exponent
+        auto n0 = saved_values[0]; // base
+        auto n1 = saved_values[1]; // exponent
 
-            next_operators[0]->evaluate(x * n1 * std::pow(n0, n1 - 1));
-        }
+        this->next_evaluate(0, x * n1 * std::pow(n0, n1 - 1));
+        this->next_evaluate(1, x * std::pow(n0, n1) * std::log(n0));
+    }
 
-        void print() const override {
-            std::cout << "PowBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "PowBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new PowBack<T>(*this);
-        }
 };
 
 template <typename T>
 class ExpBack: public Operator<T> { 
-    public:
-        ExpBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        ExpBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~ExpBack() {}
+public:
+    ExpBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~ExpBack() {}
 
-        void evaluate(const T& x) const override {
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(x * std::exp(this->m_saved_values[0]));
-        }
+        this->next_evaluate(0, x * std::exp(saved_values[0]));
+    }
 
-        void print() const override {
-            std::cout << "ExpBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "ExpBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new ExpBack<T>(*this);
-        }
 };
-
 template <typename T>
 class LogBack: public Operator<T> { 
-    public:
-        LogBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        LogBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~LogBack() {}
+public:
+    LogBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~LogBack() {}
 
-        void evaluate(const T& x) const override {
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(x / this->m_saved_values[0]);
-        }
+        this->next_evaluate(0, x / saved_values[0]);
+    }
 
-        void print() const override {
-            std::cout << "LogBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "LogBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new LogBack<T>(*this);
-        }
 };
 
 template <typename T>
 class SqrtBack: public Operator<T> { 
-    public:
-        SqrtBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        SqrtBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~SqrtBack() {}
+public:
+    SqrtBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~SqrtBack() {}
 
-        void evaluate(const T& x) const override {
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(x / (2 * std::sqrt(this->m_saved_values[0])));
-        }
+        this->next_evaluate(0, x / (2 * std::sqrt(saved_values[0])));
+    }
 
-        void print() const override {
-            std::cout << "SqrtBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "SqrtBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new SqrtBack<T>(*this);
-        }
 };
-
 template <typename T>
 class SinBack: public Operator<T> { 
-    public:
-        SinBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        SinBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~SinBack() {}
+public:
+    SinBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~SinBack() {}
 
-        void evaluate(const T& x) const override {
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(x * std::cos(this->m_saved_values[0]));
-        }
+        this->next_evaluate(0, x * std::cos(saved_values[0]));
+    }
 
-        void print() const override {
-            std::cout << "SinBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "SinBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new SinBack<T>(*this);
-        }
 };
 
 template <typename T>
 class CosBack: public Operator<T> { 
-    public:
-        CosBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        CosBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~CosBack() {}
+public:
+    CosBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~CosBack() {}
 
-        void evaluate(const T& x) const override {
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(-x * std::sin(this->m_saved_values[0]));
-        }
+        this->next_evaluate(0, -x * std::sin(saved_values[0]));
+    }
 
-        void print() const override {
-            std::cout << "CosBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "CosBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new CosBack<T>(*this);
-        }
 };
 
 template <typename T>
 class TanBack: public Operator<T> { 
-    public:
-        TanBack(const std::vector<T>& saved_values, const std::vector<Operator<T>*>& next_operators) : Operator<T>(saved_values, next_operators) {}
-        // without saved_values
-        TanBack(const std::vector<Operator<T>*>& next_operators) : Operator<T>(std::vector<T>(), next_operators) {}
-        ~TanBack() {}
+public:
+    TanBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~TanBack() {}
 
-        void evaluate(const T& x) const override {
-            auto next_operators = this->m_next_operators; 
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
 
-            next_operators[0]->evaluate(x / (std::cos(this->m_saved_values[0]) * std::cos(this->m_saved_values[0])));
-        }
+        this->next_evaluate(0, x / (std::cos(saved_values[0]) * std::cos(saved_values[0])));
+    }
 
-        void print() const override {
-            std::cout << "TanBack" << std::endl;
-        }
+    void print() const override {
+        std::cout << "TanBack" << std::endl;
+    }
 
-        Operator<T>* clone() const override {
-            return new TanBack<T>(*this);
-        }
 };
+template <typename T>
+class AbsBack: public Operator<T> { 
+public:
+    AbsBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~AbsBack() {}
+
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values;
+
+        this->next_evaluate(0, x * (saved_values[0] > 0 ? 1 : -1));
+    }
+
+    void print() const override {
+        std::cout << "AbsBack" << std::endl;
+    }
+
+};
+
+template <typename T>
+class ReluBack: public Operator<T> { 
+public:
+    ReluBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+    ~ReluBack() {}
+
+    void evaluate(const T& x) const override {
+        auto& saved_values = this->m_saved_values; 
+
+        this->next_evaluate(0, x * (saved_values[0] > 0 ? 1 : 0));
+    }
+
+    void print() const override {
+        std::cout << "ReluBack" << std::endl;
+    }
+
+};
+
 
 
 } // namespace sdlm

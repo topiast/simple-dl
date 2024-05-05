@@ -41,7 +41,11 @@ public:
     }
 
 
-    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.matmul(weights).row_add(bias);
+    }
+
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
         return input.matmul(weights).row_add(bias);
     }
 

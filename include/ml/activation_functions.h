@@ -14,7 +14,11 @@ public:
 
     Sigmoid() {}
 
-    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.sigmoid();
+    }
+
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
         return input.sigmoid();
     }
 
@@ -34,7 +38,11 @@ public:
 
     ReLU() {}
 
-    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.relu();
+    }
+
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
         return input.relu();
     }
 
@@ -55,7 +63,10 @@ public:
 
     Softmax() {}
 
-    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.softmax();
+    }
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
         return input.softmax();
     }
 
@@ -76,7 +87,11 @@ public:
 
     Tanh() {}
 
-    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.tanh();
+    }
+
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
         return input.tanh();
     }
 
@@ -96,7 +111,11 @@ public:
 
     Flatten() {}
 
-    sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
+        return input.flatten();
+    }
+
+    sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
         return input.flatten();
     }
 

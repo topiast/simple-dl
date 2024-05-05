@@ -83,7 +83,7 @@ class Tensor {
     }
 
 
-    Tensor operator+(const Tensor& rhs) const {
+    Tensor operator+(Tensor& rhs) {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for addition");
         }
@@ -99,7 +99,11 @@ class Tensor {
         return result;
     }
 
-    Tensor operator-(const Tensor& rhs) const {
+    Tensor operator+(Tensor&& rhs) {
+        return *this + rhs;
+    }
+
+    Tensor operator-(Tensor& rhs) {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for subtraction");
         }
@@ -115,7 +119,11 @@ class Tensor {
         return result;
     }
 
-    Tensor row_add(const Tensor& rhs) const {
+    Tensor operator-(Tensor&& rhs) {
+        return *this - rhs;
+    }
+
+    Tensor row_add(Tensor& rhs) {
         if (m_shape[1] != rhs.m_shape[1]) {
             throw std::invalid_argument("Incompatible shapes for row addition");
         }
@@ -133,7 +141,11 @@ class Tensor {
         return result;
     }
 
-    Tensor& operator+=(const Tensor& rhs) {
+    Tensor row_add(Tensor&& rhs) {
+        return row_add(rhs);
+    }
+
+    Tensor& operator+=(Tensor& rhs) {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for addition");
         }
@@ -145,7 +157,11 @@ class Tensor {
         return *this;
     }
 
-    Tensor& operator-=(const Tensor& rhs) {
+    Tensor& operator+=(Tensor&& rhs) {
+        return *this += rhs;
+    }
+
+    Tensor& operator-=(Tensor& rhs) {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for subtraction");
         }
@@ -157,7 +173,11 @@ class Tensor {
         return *this;
     }
 
-    Tensor operator*(const Tensor& rhs) const {
+    Tensor& operator-=(Tensor&& rhs) {
+        return *this -= rhs;
+    }
+
+    Tensor operator*(Tensor& rhs) {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for element-wise multiplication");
         }
@@ -173,7 +193,11 @@ class Tensor {
         return result;
     }
 
-    Tensor& operator*=(const Tensor& rhs) {
+    Tensor operator*(Tensor&& rhs) {
+        return *this * rhs;
+    }
+
+    Tensor& operator*=(Tensor& rhs) {
         if (m_shape != rhs.m_shape) {
             throw std::invalid_argument("Incompatible shapes for element-wise multiplication");
         }
@@ -185,7 +209,11 @@ class Tensor {
         return *this;
     }
 
-    Tensor operator*(T rhs) const {
+    Tensor& operator*=(Tensor&& rhs) {
+        return *this *= rhs;
+    }
+
+    Tensor operator*(T& rhs) {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -197,7 +225,11 @@ class Tensor {
         return result;
     }
 
-    Tensor& operator*=(T rhs) {
+    Tensor operator*(T&& rhs) {
+        return *this * rhs;
+    }
+
+    Tensor& operator*=(T& rhs) {
         for (size_t i = 0; i < m_data.size(); ++i) {
             m_data[i] *= rhs;
         }
@@ -205,8 +237,11 @@ class Tensor {
         return *this;
     }
 
+    Tensor& operator*=(T&& rhs) {
+        return *this *= rhs;
+    }
 
-    Tensor operator+(T rhs) const {
+    Tensor operator+(T& rhs) {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -218,7 +253,11 @@ class Tensor {
         return result;
     }
 
-    Tensor& operator+=(T rhs) const {
+    Tensor operator+(T&& rhs) {
+        return *this + rhs;
+    }
+
+    Tensor& operator+=(T& rhs) {
         for (size_t i = 0; i < m_data.size(); ++i) {
             m_data[i] += rhs;
         }
@@ -226,7 +265,11 @@ class Tensor {
         return *this;
     }
 
-    Tensor operator-(T rhs) const {
+    Tensor& operator+=(T&& rhs) {
+        return *this += rhs;
+    }
+
+    Tensor operator-(T& rhs) {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -238,7 +281,12 @@ class Tensor {
         return result;
     }
 
-    Tensor& operator-=(T rhs) {
+    Tensor operator-(T&& rhs) {
+        return *this - rhs;
+    }
+
+
+    Tensor& operator-=(T& rhs) {
         for (size_t i = 0; i < m_data.size(); ++i) {
             m_data[i] -= rhs;
         }
@@ -246,7 +294,11 @@ class Tensor {
         return *this;
     }
 
-    Tensor operator/(T rhs) const {
+    Tensor& operator-=(T&& rhs) {
+        return *this -= rhs;
+    }
+
+    Tensor operator/(T& rhs) {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -258,7 +310,11 @@ class Tensor {
         return result;
     }
 
-    Tensor& operator/=(T rhs) {
+    Tensor operator/(T&& rhs) {
+        return *this / rhs;
+    }
+
+    Tensor& operator/=(T& rhs) {
         for (size_t i = 0; i < m_data.size(); ++i) {
             m_data[i] /= rhs;
         }
@@ -266,7 +322,11 @@ class Tensor {
         return *this;
     }
 
-    Tensor operator-() const {
+    Tensor& operator/=(T&& rhs) {
+        return *this /= rhs;
+    }
+
+    Tensor operator-() {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -279,7 +339,7 @@ class Tensor {
     }
 
 
-    Tensor matmul(const Tensor& rhs) const {
+    Tensor matmul(Tensor& rhs) {
         if (m_shape.size() != 2 || rhs.m_shape.size() != 2) {
             throw std::invalid_argument("Incompatible shapes for matrix multiplication. Tensors must be 2D");
         }
@@ -306,7 +366,11 @@ class Tensor {
         return result;
     }
 
-    Tensor transpose() const {
+    Tensor matmul(Tensor&& rhs) {
+        return matmul(rhs);
+    }
+
+    Tensor transpose() {
         if (m_shape.size() != 2) {
             throw std::invalid_argument("Incompatible shape for transpose");
         }
@@ -323,7 +387,7 @@ class Tensor {
         return result;
     }
 
-    Tensor sum(int axis) const {
+    Tensor sum(int axis) {
         if (axis >= m_shape.size()) {
             throw std::invalid_argument("Invalid axis");
         }
@@ -345,7 +409,7 @@ class Tensor {
         return result;
     }
 
-    T sum() const {
+    T sum() {
         T result = T(0);
         for (size_t i = 0; i < m_data.size(); ++i) {
             result += m_data[i];
@@ -353,7 +417,7 @@ class Tensor {
         return result;
     }
 
-    Tensor pow(T exponent) const {
+    Tensor pow(T& exponent) {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -365,7 +429,11 @@ class Tensor {
         return result;
     }
 
-    Tensor exp() const {
+    Tensor pow(T&& exponent) {
+        return pow(exponent);
+    }
+
+    Tensor exp() {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -377,7 +445,7 @@ class Tensor {
         return result;
     }
 
-    Tensor log() const {
+    Tensor log() {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -389,7 +457,7 @@ class Tensor {
         return result;
     }
 
-    Tensor clip(T min, T max) const {
+    Tensor clip(T min, T max) {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -405,7 +473,7 @@ class Tensor {
         return result;
     }
 
-    T norm(T p) const {
+    T norm(T p) {
         T result = T(0);
         for (size_t i = 0; i < m_data.size(); ++i) {
             result += std::pow(std::abs(m_data[i]), p);
@@ -413,7 +481,7 @@ class Tensor {
         return std::pow(result, T(1) / p);
     }
 
-    Tensor one_hot(int num_classes, std::function<int(T)> cast) const {
+    Tensor one_hot(int num_classes, std::function<int(T)> cast) {
         Tensor result;
         result.m_shape = {m_shape[0], num_classes};
         result.m_data = std::vector<T>(result.m_shape[0] * result.m_shape[1], T(0));
@@ -460,7 +528,7 @@ class Tensor {
         return result;
     }
 
-    Tensor normalize(T min = 0, T max = 1) const {
+    Tensor normalize(T min = 0, T max = 1) {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
@@ -490,9 +558,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            // This is hacky, but it works for now
-            result.m_data[i]++;
-            result.m_data[i] = ((std::exp(-result.m_data[i]))).pow(-1);
+            result.m_data[i] = T(1) / (T(1) + std::exp(-result.m_data[i]));
         }
 
         return result;
@@ -561,6 +627,19 @@ class Tensor {
             std::cout << m_data[i] << " ";
         }
         std::cout << std::endl;
+    }
+
+    // helpers
+    void map(std::function<T(T)> f) {
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            m_data[i] = f(m_data[i]);
+        }
+    }
+
+    void foreach(std::function<void(T&)> f) {
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            f(m_data[i]);
+        }
     }
 
     // pretty print tensor

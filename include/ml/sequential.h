@@ -24,13 +24,18 @@ class Sequential : public Module<T> {
 
             Sequential(std::initializer_list<Module<T>*> modules) : modules(modules) {}
 
-            sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) override {
+            sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
                 sdlm::Tensor<sdlm::Number<T>> output = input;
                 for (auto& module : modules) {
                     output = module->forward(output);
                 }
                 return output;
             }
+
+            sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
+                return forward(input);
+            }
+
 
             std::vector<sdlm::Number<T>*> get_parameters() override {
                 std::vector<sdlm::Number<T>*> parameters;

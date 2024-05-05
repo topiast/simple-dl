@@ -17,6 +17,8 @@ int main() {
     Number d = 4;
     Number e = 5;
 
+    b.set_count_gradient(false);
+
     
 
     a = d + (e * c) / b; // 4 + (5 * 3) / 2 = 4 + 7.5 = 11.5

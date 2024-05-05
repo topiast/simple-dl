@@ -35,7 +35,10 @@ public:
      * @param input The input tensor to the module.
      * @return The output tensor produced by the module.
      */
-    virtual sdlm::Tensor<sdlm::Number<T>> forward(const sdlm::Tensor<sdlm::Number<T>>& input) = 0;
+    virtual sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) = 0;
+
+    virtual sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) = 0;
+
     
     /**
      * @brief Retrieves the parameters of the module.
@@ -64,7 +67,7 @@ public:
      * @param input The input tensor to the module.
      * @return The output tensor produced by the module.
      */
-    sdlm::Tensor<sdlm::Number<T>> operator()(const sdlm::Tensor<sdlm::Number<T>>& input) {
+    sdlm::Tensor<sdlm::Number<T>> operator()(sdlm::Tensor<sdlm::Number<T>>& input) {
         return forward(input);
     }
 

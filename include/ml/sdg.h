@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <functional>
 
 #include "math/number.h"
 #include "math/tensor.h"
@@ -14,69 +15,76 @@ template <typename T>
 class SDG {
 private:
     std::vector<sdlm::Number<T>*> parameters;
-    sdlm::Function<T> loss_func;
     T learning_rate;
     T momentum_factor;
     bool clip_gradients;
-    std::vector<sdlm::Number<T>> momentums; 
+    std::vector<T> momentums; 
 
 public:
-    SDG(std::vector<sdlm::Number<T>*> parameters, sdlm::Function<T> loss_func, T learning_rate, T momentum_factor = 0.9, bool clip_gradients = false)
-        : parameters(parameters), loss_func(loss_func), learning_rate(learning_rate), momentum_factor(momentum_factor) {
-        momentums.reserve(parameters.size());
-        for (auto& p : parameters) {
-            momentums.push_back(sdlm::Number<T>(0)); 
-        }
+    SDG(std::vector<sdlm::Number<T>*> parameters, T learning_rate, T momentum_factor = 0.9, bool clip_gradients = false)
+        : parameters(parameters), learning_rate(learning_rate), momentum_factor(momentum_factor), clip_gradients(clip_gradients), momentums(parameters.size(), 0){
     }    
 
-    sdlm::Number<T> step() {
-        sdlm::Number<T> total_loss = loss_func.compute();
-        // Calculate gradients
-        std::vector<sdlm::Number<T>> gradients;
-        gradients.reserve(parameters.size());
-        for (auto& p : parameters) {
-            gradients.push_back(loss_func.derivative(p).gradient());
-        }
-
+    void step() {
 
         // Update momentums and parameters using momentum
         for (int i = 0; i < parameters.size(); i++) {
-            momentums[i] = momentums[i] * momentum_factor + gradients[i];
+            momentums[i] = momentums[i] * momentum_factor + parameters[i]->gradient();
             // std::cout << "parameter " << parameters[i] << " gradient: " << gradients[i] << std::endl;
             if (clip_gradients) {
-                *parameters[i] -= momentums[i].clip(-1, 1) * learning_rate;
+                T clipped_momentum = momentums[i] > 1 ? 1 : (momentums[i] < -1 ? -1 : momentums[i]);
+                parameters[i]->no_grad() -= clipped_momentum * learning_rate;
             } else {
-                *parameters[i] -= momentums[i] * learning_rate;
+                parameters[i]->no_grad() -= momentums[i] * learning_rate;
             }
         }
-
-
-        return total_loss;
 
     }
 
 
-    void fit(int epochs, bool print_loss = true) {
-        for (int i = 0; i < epochs; i++) {
-            sdlm::Number<T> total_loss = step();
-            if (print_loss) {
-                std::cout << "Epoch " << i << " loss: " << total_loss << std::endl;
-            }
-        }
-    }
+    // void fit(int epochs, bool print_loss = true) {
+    //     for (int i = 0; i < epochs; i++) {
+    //         sdlm::Number<T> total_loss = step();
+    //         if (print_loss) {
+    //             std::cout << "Epoch " << i << " loss: " << total_loss << std::endl;
+    //         }
+    //     }
+    // }
 
-    void fit_until_convergence(const sdlm::Number<T>& threshold, bool print_loss = true) {
-        sdlm::Number<T> total_loss = sdlm::Number<T>::max();
-        sdlm::Number<T> prev_loss = loss_func.compute();
+    void fit_until_convergence(const std::function<sdlm::Number<T>()>& loss_function, const T& threshold, bool print_loss = true) {
+        if (print_loss) {
+            std::cout << "Training until convergence with threshold " << threshold << std::endl;
+        }
+        T total_loss = sdlm::Number<T>::max().value();
+        sdlm::Number<T> loss = loss_function();
+        T prev_loss = loss.value();
+
+        // loss.get_grad_fn()->visualize();
 
         if (print_loss){
-            std::cout << "Initial loss: " << prev_loss << std::endl;
+            std::cout << "Initial loss: " << loss << std::endl;
         }
         
         int i = 0;
         while (std::abs(total_loss - prev_loss) > threshold) {
             prev_loss = total_loss;
-            total_loss = step();
+            std::cout << "here" << std::endl;
+            // loss.zero_grad();
+            std::cout << "here 2" << std::endl;
+            loss.backward();
+            std::cout << "here 3" << std::endl;
+            step();
+            
+            //zero gradients
+            for (auto& p : parameters) {
+                p->set_gradient(0);
+            }
+
+            std::cout << "here 4" << std::endl;
+            loss = loss_function();
+            std::cout << "here 5" << std::endl;
+            total_loss = loss.value();
+
             if (print_loss) {
                 std::cout << "Epoch " << i << " loss: " << total_loss << std::endl;
             }
