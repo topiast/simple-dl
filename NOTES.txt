@@ -1,1 +1,0 @@
-the error is in backoperator. Somewhere an AccumulateGrad is dereferenced and thus freed
