@@ -59,8 +59,6 @@ public:
         sdlm::Number<T> loss = loss_function();
         T prev_loss = loss.value();
 
-        // loss.get_grad_fn()->visualize();
-
         if (print_loss){
             std::cout << "Initial loss: " << loss << std::endl;
         }
@@ -68,11 +66,7 @@ public:
         int i = 0;
         while (std::abs(total_loss - prev_loss) > threshold) {
             prev_loss = total_loss;
-            std::cout << "here" << std::endl;
-            // loss.zero_grad();
-            std::cout << "here 2" << std::endl;
             loss.backward();
-            std::cout << "here 3" << std::endl;
             step();
             
             //zero gradients
@@ -80,9 +74,7 @@ public:
                 p->set_gradient(0);
             }
 
-            std::cout << "here 4" << std::endl;
             loss = loss_function();
-            std::cout << "here 5" << std::endl;
             total_loss = loss.value();
 
             if (print_loss) {

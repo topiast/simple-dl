@@ -17,9 +17,7 @@ class Operator {
 public:
     virtual void evaluate(const T& x) const = 0;
     virtual void print() const = 0;
-    virtual ~Operator() {
-        // std::cout << "Operator destructor" << std::endl;
-    }
+    virtual ~Operator() { }
 
     void debug_evalutate(const T& x) const {
         // check if member variables are set
@@ -28,30 +26,15 @@ public:
         evaluate(x);
     }
 
-    // void set(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) {
-    //     m_saved_values = saved_values;
-    //     m_next_operators = next_operators;
-    // }
-
-    virtual void zero_grad() {
-        for (const std::shared_ptr<Operator<T>>& next_operator : m_next_operators) {
-            if (next_operator != nullptr) {
-                // print the number of references the shared pointer has
-                // std::cout << next_operator.use_count() << std::endl;
-                next_operator->zero_grad();
-            }
-        }
-    }
-
     void next_evaluate(const int i, const T& x) const {
-        if (i >= m_next_operators.size()) {
+        if (this != nullptr && i >= m_next_operators.size()) {
             std::cout << "Error: next operator index out of range" << std::endl;
             return;
         }
-        auto next_operator = m_next_operators[i];
-        if (next_operator != nullptr) {
-            next_operator->evaluate(x);
-        }
+        // auto next_operator = m_next_operators[i];
+        if (m_next_operators[i] != nullptr) {
+            m_next_operators[i]->evaluate(x);
+        } 
     }
 
     Operator<T>& operator=(const Operator<T>& rhs) {
@@ -85,9 +68,11 @@ protected:
     std::vector<std::shared_ptr<Operator<T>>> m_next_operators;
 
     Operator(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
-        : m_saved_values(saved_values), m_next_operators(next_operators) {}
+        : m_saved_values(saved_values), m_next_operators(next_operators) {
+            // std::cout << "Operator constructor: " << this << std::endl;
+        }
 
-    Operator(const Operator<T>& other) : m_saved_values(other.m_saved_values), m_next_operators(other.m_next_operators) {}
+    // Operator(const Operator<T>& other) : m_saved_values(other.m_saved_values), m_next_operators(other.m_next_operators) {}
 };
 
 template <typename T>
@@ -98,10 +83,7 @@ private:
 public:
     AccumulateGrad(Number<T>* variable)
         : Operator<T>(std::vector<T>(), std::vector<std::shared_ptr<Operator<T>>>()), m_variable(variable) {}
-    ~AccumulateGrad() {
-
-        std::cout << "AccumulateGrad destructor" << std::endl;
-    }
+    ~AccumulateGrad() { }
 
 
     void evaluate(const T& x) const override {
@@ -110,10 +92,6 @@ public:
 
     void print() const override {
         std::cout << "AccumulateGrad" << std::endl;
-    }
-
-    void zero_grad() override {
-        m_variable->set_gradient(0);
     }
 };
 
@@ -165,8 +143,8 @@ public:
 template <typename T>
 class AddBack: public Operator<T> { 
 public:
-    AddBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
-        : Operator<T>(saved_values, next_operators) {}
+    // AddBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+    //     : Operator<T>(saved_values, next_operators) {}
     // without saved_values
     AddBack(const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
         : Operator<T>(std::vector<T>(), next_operators) {}
@@ -186,8 +164,8 @@ public:
 template <typename T>
 class SubBack: public Operator<T> { 
 public:
-    SubBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
-        : Operator<T>(saved_values, next_operators) {}
+    // SubBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+    //     : Operator<T>(saved_values, next_operators) {}
     // without saved_values
     SubBack(const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
         : Operator<T>(std::vector<T>(), next_operators) {}
@@ -206,8 +184,8 @@ public:
 template <typename T>
 class NegBack: public Operator<T> { 
 public:
-    NegBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
-        : Operator<T>(saved_values, next_operators) {}
+    // NegBack(const std::vector<T>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+    //     : Operator<T>(saved_values, next_operators) {}
     // without saved_values
     NegBack(const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
         : Operator<T>(std::vector<T>(), next_operators) {}

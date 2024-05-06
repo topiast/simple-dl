@@ -17,6 +17,10 @@ int main() {
     Number d = 4;
     Number e = 5;
 
+    for(auto& var : {&a, &b, &c, &d, &e}) {
+        var->set_count_gradient(true);
+    }
+
     b.set_count_gradient(false);
 
     

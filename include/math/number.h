@@ -20,7 +20,7 @@ template <typename T>
 class Number {
 private:
     std::shared_ptr<Operator<T>> m_grad_fn = std::shared_ptr<Operator<T>>(nullptr);
-    bool count_gradient = true;
+    bool count_gradient = false;
     bool is_leaf = true;
     T m_value;
     T m_gradient;
@@ -110,6 +110,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -120,9 +121,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        result.set_grad_fn(std::make_shared<AddBack<T>>(next_operators));
+            result.set_grad_fn(std::make_shared<AddBack<T>>(next_operators));
+        }
         
         return result;
     }
@@ -138,6 +141,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -150,9 +154,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        result.set_grad_fn(std::make_shared<MulBack<T>>(saved_values, next_operators));
+            result.set_grad_fn(std::make_shared<MulBack<T>>(saved_values, next_operators));
+        }
 
         return result;
     }
@@ -167,6 +173,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -179,9 +186,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        result.set_grad_fn(std::make_shared<DivBack<T>>(saved_values, next_operators));
+            result.set_grad_fn(std::make_shared<DivBack<T>>(saved_values, next_operators));
+        }
 
         return result;
     }
@@ -197,6 +206,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -207,9 +217,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        result.set_grad_fn(std::make_shared<SubBack<T>>(next_operators));
+            result.set_grad_fn(std::make_shared<SubBack<T>>(next_operators));
+        }
 
         return result;
     }
@@ -225,6 +237,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -232,9 +245,11 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        result.set_grad_fn(std::make_shared<NegBack<T>>(next_operators));
+            result.set_grad_fn(std::make_shared<NegBack<T>>(next_operators));
+        }
 
         return result;
     }
@@ -246,6 +261,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -254,9 +270,11 @@ public:
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
 
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        result.set_grad_fn(std::make_shared<AddBack<T>>(next_operators));
+            result.set_grad_fn(std::make_shared<AddBack<T>>(next_operators));
+}
 
         return result;
     }
@@ -268,6 +286,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -276,9 +295,11 @@ public:
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
 
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        result.set_grad_fn(std::make_shared<SubBack<T>>(next_operators));
+            result.set_grad_fn(std::make_shared<SubBack<T>>(next_operators));
+        }
 
         return result;
     }
@@ -288,6 +309,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -298,10 +320,12 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
-        std::vector<T> saved_values = {m_value, rhs.m_value};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+            std::vector<T> saved_values = {m_value, rhs.m_value};
 
-        result.set_grad_fn(std::make_shared<PowBack<T>>(saved_values, next_operators));
+            result.set_grad_fn(std::make_shared<PowBack<T>>(saved_values, next_operators));
+        }
 
         return result;
     }
@@ -315,6 +339,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -322,10 +347,12 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
-        std::vector<T> saved_values = {m_value, rhs};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+            std::vector<T> saved_values = {m_value, rhs};
 
-        result.set_grad_fn(std::make_shared<PowBack<T>>(saved_values, next_operators));
+            result.set_grad_fn(std::make_shared<PowBack<T>>(saved_values, next_operators));
+        }
 
         return result;
     }
@@ -337,6 +364,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -344,11 +372,13 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        std::vector<T> saved_values = {m_value};
+            std::vector<T> saved_values = {m_value};
+            result.set_grad_fn(std::make_shared<ExpBack<T>>(saved_values, next_operators));
+        }
 
-        result.set_grad_fn(std::make_shared<ExpBack<T>>(saved_values, next_operators));
 
         return result;
     }
@@ -360,6 +390,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -367,11 +398,13 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        std::vector<T> saved_values = {m_value};
+            std::vector<T> saved_values = {m_value};
+            result.set_grad_fn(std::make_shared<LogBack<T>>(saved_values, next_operators));
+        }
 
-        result.set_grad_fn(std::make_shared<LogBack<T>>(saved_values, next_operators));
 
         return result;
     }
@@ -383,6 +416,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -390,11 +424,13 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        std::vector<T> saved_values = {m_value};
+            std::vector<T> saved_values = {m_value};
+            result.set_grad_fn(std::make_shared<SqrtBack<T>>(saved_values, next_operators));
+        }
 
-        result.set_grad_fn(std::make_shared<SqrtBack<T>>(saved_values, next_operators));
 
         return result;
     }
@@ -406,6 +442,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -413,11 +450,13 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        std::vector<T> saved_values = {m_value};
+            std::vector<T> saved_values = {m_value};
+            result.set_grad_fn(std::make_shared<SinBack<T>>(saved_values, next_operators));
+        }
 
-        result.set_grad_fn(std::make_shared<SinBack<T>>(saved_values, next_operators));
 
         return result;
     }
@@ -429,6 +468,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -436,11 +476,13 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        std::vector<T> saved_values = {m_value};
+            std::vector<T> saved_values = {m_value};
+            result.set_grad_fn(std::make_shared<CosBack<T>>(saved_values, next_operators));
+        }
 
-        result.set_grad_fn(std::make_shared<CosBack<T>>(saved_values, next_operators));
 
         return result;
     }
@@ -452,6 +494,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -459,11 +502,13 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        std::vector<T> saved_values = {m_value};
+            std::vector<T> saved_values = {m_value};
+            result.set_grad_fn(std::make_shared<TanBack<T>>(saved_values, next_operators));
+        }
 
-        result.set_grad_fn(std::make_shared<TanBack<T>>(saved_values, next_operators));
 
         return result;
     }
@@ -475,6 +520,7 @@ public:
 
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -482,11 +528,13 @@ public:
         if (is_leaf && count_gradient && get_grad_fn().get() == nullptr) {
             set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
 
-        std::vector<T> saved_values = {m_value};
+            std::vector<T> saved_values = {m_value};
+            result.set_grad_fn(std::make_shared<AbsBack<T>>(saved_values, next_operators));
+        }
 
-        result.set_grad_fn(std::make_shared<AbsBack<T>>(saved_values, next_operators));
 
         return result;
     }
@@ -534,6 +582,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             set_leaf(false);
+            set_count_gradient(true);
         } else {
             set_count_gradient(false);
         }
@@ -544,9 +593,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        set_grad_fn(std::make_shared<AddBack<T>>(next_operators));
+            set_grad_fn(std::make_shared<AddBack<T>>(next_operators));
+        }
 
         return *this;
     }
@@ -562,6 +613,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             set_leaf(false);
+            set_count_gradient(true);
         } else {
             set_count_gradient(false);
         }
@@ -572,9 +624,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        set_grad_fn(std::make_shared<SubBack<T>>(next_operators));
+            set_grad_fn(std::make_shared<SubBack<T>>(next_operators));
+        }
 
         return *this;
     }
@@ -591,6 +645,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             set_leaf(false);
+            set_count_gradient(true);
         } else {
             set_count_gradient(false);
         }
@@ -603,9 +658,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        set_grad_fn(std::make_shared<MulBack<T>>(saved_values, next_operators));
+            set_grad_fn(std::make_shared<MulBack<T>>(saved_values, next_operators));
+        }
 
         return *this;
     }
@@ -621,6 +678,7 @@ public:
 
         if (count_gradient || rhs.count_gradient){
             set_leaf(false);
+            set_count_gradient(true);
         } else {
             set_count_gradient(false);
         }
@@ -633,9 +691,11 @@ public:
         if (rhs.is_leaf && rhs.count_gradient && rhs.get_grad_fn().get() == nullptr) {
             rhs.set_grad_fn(std::make_shared<AccumulateGrad<T>>(&rhs));
         }
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
+        if(count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn(), rhs.get_grad_fn()};
 
-        set_grad_fn(std::make_shared<DivBack<T>>(saved_values, next_operators));
+            set_grad_fn(std::make_shared<DivBack<T>>(saved_values, next_operators));
+        }
 
         return *this;
     }
@@ -657,6 +717,7 @@ public:
         
         if (count_gradient){
             result.set_leaf(false);
+            result.set_count_gradient(true);
         } else {
             result.set_count_gradient(false);
         }
@@ -665,10 +726,12 @@ public:
             result.set_grad_fn(std::make_shared<AccumulateGrad<T>>(this));
         }
         
-        std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
-        std::vector<T> saved_values = {m_value};
+        if(result.count_gradient){
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_fn()};
+            std::vector<T> saved_values = {m_value};
 
-        result.set_grad_fn(std::make_shared<ReluBack<T>>(saved_values, next_operators));
+            result.set_grad_fn(std::make_shared<ReluBack<T>>(saved_values, next_operators));
+        }
 
         return result;
     }
@@ -725,7 +788,6 @@ public:
 
     void zero_grad() {
         m_gradient = 0;
-        m_grad_fn->zero_grad();
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Number<T>& number) {

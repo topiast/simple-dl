@@ -16,6 +16,11 @@ TEST(TestGradients, TestFunctionValuesAndGradients) {
     variables.push_back(&b);
     variables.push_back(&c);
 
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
+
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
     // });
@@ -49,7 +54,10 @@ TEST(TestGradients, TestFunctionValuesAndGradientsDivision) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return (*variables[0]) / (*variables[1]) + (*variables[2]) * 2; // 1 / 2 + 3 * 2 = 6.5
     // });
@@ -89,7 +97,10 @@ TEST(TestGradients, TestFunctionValuesAndGradientsPower) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-    
+        // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
 
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return sdlm::pow((*variables[0]), (*variables[1])) + (*variables[2]) * 2; 
@@ -101,8 +112,8 @@ TEST(TestGradients, TestFunctionValuesAndGradientsPower) {
 
     // vector of expected function gradients
     std::vector<float> expected_gradients = {
-        std::powf(x1, x2 -1) * x2,
-        std::powf(x1, x2) * std::logf(x1),
+        std::pow(x1, x2 -1) * x2,
+        std::pow(x1, x2) * std::log(x1),
         2
         };
 
@@ -111,7 +122,7 @@ TEST(TestGradients, TestFunctionValuesAndGradientsPower) {
 
         // Test values
         EXPECT_FLOAT_EQ(f.value(), 
-        std::powf(x1, x2) + x3 * 2
+        std::pow(x1, x2) + x3 * 2
         );
 
         // Test gradients
@@ -130,7 +141,10 @@ TEST(TestGradients, TestFunctionValuesAndGradientsSqrt) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return sdlm::sqrt((*variables[0])) + (*variables[2]) * 2; // sqrt(1) + 3 * 2 = 7
     // });
@@ -162,7 +176,10 @@ TEST(TestGradients, TestFunctionValuesAndGradientsAbs) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return sdlm::abs((*variables[0])) + (*variables[2]) * 2; // abs(1) + 3 * 2 = 7
     // });
@@ -202,7 +219,10 @@ TEST(TestGradients, TestFunctionValuesAndGradientssdlm) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return sdlm::log((*variables[0])) + (*variables[2]) * 2; // sdlm(1) + 3 * 2 = 7
     // });
@@ -246,7 +266,10 @@ TEST(TestGradients, TestFunctionValuesAndGradientsComplicated) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
     // sdlm::Function<float> func(variables, [&variables]() {
 
     //     return sdlm::pow((*variables[0]), (*variables[1])) + sdlm::sqrt((*variables[2])) * 2; // 2^3 + sqrt(4) * 2 = 14
@@ -258,15 +281,15 @@ TEST(TestGradients, TestFunctionValuesAndGradientsComplicated) {
 
     // vector of expected function gradients
     std::vector<float> expected_gradients = {
-        std::powf(x1, x2 -1) * x2,
-        std::powf(x1, x2) * std::logf(x1),
-        2 / (2 * std::sqrtf(x3))
+        std::pow(x1, x2 -1) * x2,
+        std::pow(x1, x2) * std::log(x1),
+        2 / (2 * std::sqrt(x3))
         };
 
     for (int i = 0; i < variables.size(); i++) {
         // Test values
         EXPECT_FLOAT_EQ(f.value(), 
-        std::powf(x1, x2) + std::sqrtf(x3) * 2
+        std::pow(x1, x2) + std::sqrt(x3) * 2
         );
 
         // Test gradients
@@ -283,12 +306,15 @@ TEST(TestGradients, TestFunctionValuesAndGradientsCountGradient) {
     Number b = 2;
     Number c = 3;
 
-    a.set_count_gradient(false);
 
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
+    a.set_count_gradient(false);
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
     // });
@@ -309,37 +335,36 @@ TEST(TestGradients, TestFunctionValuesAndGradientsCountGradient) {
         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
     }
 }
-// // test sigmoid
-// TEST(TestGradients, TestFunctionValuesAndGradientsSigmoid) {
-//     std::vector<Number*> variables;
-//     Number a = rand() % 10;
-
-//     std::cout << "a: " << a << std::endl;
-
-//     variables.push_back(&a);
+// test sigmoid
+TEST(TestGradients, TestFunctionValuesAndGradientsSigmoid) {
+    std::vector<Number*> variables;
+    Number a = rand() % 10;
 
 
+    variables.push_back(&a);
 
-//     // sdlm::Function<float> func(variables, [&variables]() {
-//     //     return Number(1) / (Number(1) + sdlm::exp(-(*variables[0]))); 
-//     // });
+    a.set_count_gradient(true);
 
-//     Number f = Number(1) / (Number(1) + sdlm::exp(-a));
-//     f.backward();
+    // sdlm::Function<float> func(variables, [&variables]() {
+    //     return Number(1) / (Number(1) + sdlm::exp(-(*variables[0]))); 
+    // });
 
-//     float value = 1 / (1 + std::exp(-a.value()));
+    Number f = Number(1) / (Number(1) + sdlm::exp(-a));
+    f.backward();
 
-//     for (int i = 0; i < variables.size(); i++) {
+    float value = 1 / (1 + std::exp(-a.value()));
 
-//         // Test values
-//         EXPECT_FLOAT_EQ(f.value(), value );
+    for (int i = 0; i < variables.size(); i++) {
 
-//         // Test gradients
-//         // Adjust these assertions based on the expected gradient values for your function
-//         EXPECT_FLOAT_EQ(variables[i]->gradient(), (value) * (1 - value));
-//     }
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), value );
 
-// }
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), (value) * (1 - value));
+    }
+
+}
 
 // test same variable multiple times in function
 TEST(TestGradients, TestFunctionValuesAndGradientsSameVariable) {
@@ -351,26 +376,25 @@ TEST(TestGradients, TestFunctionValuesAndGradientsSameVariable) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return (*variables[0]) * (*variables[0]) + (*variables[0]) * 2; // 1 * 1 + 1 * 2 = 3
     // });
 
-    Number f = a * b + c * 2;
-
-    f.zero_grad();
-    // a.debug_print();
+    Number f = a * a + a * 2;
+    
     f.backward();
-    // a.debug_print();
 
-    // f.get_grad_fn()->visualize();
 
     // vector of expected function gradients
-    std::vector<float> expected_gradients = {2, 1, 2};
+    std::vector<float> expected_gradients = {4, 0, 0};
 
     for (int i = 0; i < variables.size(); i++) {
         // Test values
-        EXPECT_FLOAT_EQ(f.value(), 8);
+        EXPECT_FLOAT_EQ(f.value(), 3);
 
         // Test gradients
         // Adjust these assertions based on the expected gradient values for your function
@@ -388,17 +412,24 @@ TEST(TestGradients, TestFunctionValuesAndGradientsMultipleIterations) {
     variables.push_back(&a);
     variables.push_back(&b);
     variables.push_back(&c);
-
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
     // sdlm::Function<float> func(variables, [&variables]() {
     //     return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
     // });
 
     Number f = sdlm::pow(a * b + c * 2, b) + c * 2;
     float value = f.value();
-    f.zero_grad();
+    for (auto& p : variables) {
+        p->zero_grad();
+    }
     f.backward();
     f = sdlm::pow(a * b + c * 2, b) + c * 2;
-    f.zero_grad();
+    for (auto& p : variables) {
+        p->zero_grad();
+    }
     f.backward();
 
     // vector of expected function gradients
