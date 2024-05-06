@@ -718,13 +718,18 @@ class Tensor {
 
     // Overloaded set_values function for setting values at a single index
     void set_values(int index, const std::vector<T>& values) {
-        set_values(std::vector<int>{index}, values);
+        auto indices = std::vector<int>(m_shape.size(), 0);
+        indices.front() = index;
+        set_values(indices, values);
+        // set_values(std::vector<int>{index}, values);
     }
 
     // Overloaded set_values function for variable arguments
     template<typename... Args>
     void set_values(int index, Args... args) {
-        set_values(std::vector<int>{index}, {static_cast<T>(args)...});
+        auto indices = std::vector<int>(m_shape.size(), 0);
+        indices.front() = index;
+        set_values(indices, {static_cast<T>(args)...});
     }
 
     // Overloaded set_values function for multi-dimensional indices
