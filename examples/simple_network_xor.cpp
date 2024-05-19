@@ -67,12 +67,9 @@ int main() {
     Y.print();
 
     // create a simple network
-    // linear1: 2 inputs, 2 outputs, relu activation, linear2: 2 inputs, 1 output, sigmoid activation
-    Linear* linear1 = new Linear(2, 5);
+    Linear* linear1 = new Linear(2, 15);
     ReLU* act1 = new ReLU();
-    Linear* linear2 = new Linear(5, 1);
-    Sigmoid* act2 = new Sigmoid();
-
+    Linear* linear2 = new Linear(15, 1);
     Sequential simple_network({linear1, act1, linear2});
 
     // print weights
@@ -104,11 +101,10 @@ int main() {
 
     std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::mse(simple_network.forward(X), Y); };
 
-    SDG sdg(parameters, 0.001, 0.5);
+    SDG sdg(parameters, 0.01);
 
 
     sdg.fit_until_convergence(loss_func, 0.0001, true);
-    // sdg.fit(50, true);
 
     // print Y
     std::cout << "Target: " << std::endl;

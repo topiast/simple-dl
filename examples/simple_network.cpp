@@ -108,7 +108,7 @@ int main() {
 
     std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::mse(simple_network.forward(X), Y); };
 
-    SDG sdg(parameters, 0.001, 0.5);
+    SDG sdg(parameters, 0.01);
 
     // float total_loss = Number::max().value();
     // float prev_loss = 0;
