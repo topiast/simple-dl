@@ -6,24 +6,23 @@
 #include "ml/activation_functions.h"
 #include "ml/sequential.h"
 #include "ml/sdg.h"
+#include "ml/loss_functions.h"
 
 
 #include <iostream>
 
-using Number = sdlm::Number<double>;
+using Number = sdlm::Number<float>;
 using Tensor = sdlm::Tensor<Number>;
-using Linear = sdl::Linear<double>;
-using Sigmoid = sdl::Sigmoid<double>;
-using ReLU = sdl::ReLU<double>;
-using Tanh = sdl::Tanh<double>;
-using Sequential = sdl::Sequential<double>;
-using SDG = sdl::SDG<double>;
-using Function = sdlm::Function<double>;
+using Linear = sdl::Linear<float>;
+using Sigmoid = sdl::Sigmoid<float>;
+using ReLU = sdl::ReLU<float>;
+using Tanh = sdl::Tanh<float>;
+using Sequential = sdl::Sequential<float>;
+using SDG = sdl::SDG<float>;
 
 // create some linear function
 // returns a vector of 3 numbers
 Tensor some_linear_function(Number y) {
-    y.set_count_gradient(false);
 
     Tensor result;
     result.ones({3});
@@ -67,16 +66,13 @@ int main() {
     std::cout << "Target: " << std::endl;
     Y.print();
 
-
     // create a simple network
-    Linear* linear1 = new Linear(2, 10);
-    // ReLU* act1 = new ReLU();
-    // Tanh* act1 = new Tanh();
-    Sigmoid* act1 = new Sigmoid();
-    Linear* linear2 = new Linear(10, 1);
-    ReLU* act2 = new ReLU();
-    // Sigmoid* act2 = new Sigmoid();
-    
+    // linear1: 2 inputs, 2 outputs, relu activation, linear2: 2 inputs, 1 output, sigmoid activation
+    Linear* linear1 = new Linear(2, 5);
+    ReLU* act1 = new ReLU();
+    Linear* linear2 = new Linear(5, 1);
+    Sigmoid* act2 = new Sigmoid();
+
     Sequential simple_network({linear1, act1, linear2});
 
     // print weights
@@ -106,16 +102,12 @@ int main() {
 
     std::vector<Number*> parameters = simple_network.get_parameters();
 
-    Function loss_func(parameters, [&simple_network, &X, &Y]() {
-        // mean squared error
-        return (simple_network.forward(X) - Y).pow(2).sum() / X.get_shape()[0];
-    });
+    std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::mse(simple_network.forward(X), Y); };
+
+    SDG sdg(parameters, 0.001, 0.5);
 
 
-    SDG sdg(parameters, loss_func, 0.01, 0.9);
-
-
-    sdg.fit_until_convergence(0.00001);
+    sdg.fit_until_convergence(loss_func, 0.0001, true);
     // sdg.fit(50, true);
 
     // print Y
@@ -138,7 +130,7 @@ int main() {
 
     // print loss
     std::cout << "Loss: " << std::endl;
-    Number loss = loss_func.compute();
+    Number loss = loss_func();
 
     std::cout << loss << std::endl;
     
@@ -146,7 +138,6 @@ int main() {
     delete linear1;
     delete linear2;
     delete act1;
-    delete act2;
 
     return 0;
 
