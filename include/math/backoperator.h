@@ -27,7 +27,7 @@ public:
     }
 
     void next_evaluate(const int i, const T& x) const {
-        if (this != nullptr && i >= m_next_operators.size()) {
+        if (i >= m_next_operators.size()) {
             std::cout << "Error: next operator index out of range" << std::endl;
             return;
         }
