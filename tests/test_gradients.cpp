@@ -43,6 +43,37 @@ TEST(TestGradients, TestFunctionValuesAndGradients) {
         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
     }
 }
+// test addition and negative operator
+TEST(TestGradients, TestFunctionValuesAndGradientsAdditionNegative) {
+    std::vector<Number*> variables;
+    Number a = 1;
+    Number b = 2;
+    Number c = 3;
+
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
+
+    Number f = -(a + b + c * 2);
+
+    f.backward();
+
+    // vector of expected function gradients
+    std::vector<float> expected_gradients = {-1, -1, -2};
+
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), -9);
+
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
+    }
+}
 // test division
 TEST(TestGradients, TestFunctionValuesAndGradientsDivision) {
     std::vector<Number*> variables;
@@ -444,7 +475,37 @@ TEST(TestGradients, TestFunctionValuesAndGradientsMultipleIterations) {
         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
     }
 }
+// test cross entropy loss function
+TEST(TestGradients, TestFunctionValuesAndGradientsCrossEntropy) {
+    std::vector<Number*> variables;
+    Number a = 0.5;
+    Number b = 0.5;
 
+    variables.push_back(&a);
+    variables.push_back(&b);
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_count_gradient(true);
+    }
+    // sdlm::Function<float> func(variables, [&variables]() {
+    //     return -((*variables[1]) * sdlm::log((*variables[0])); 
+    // });
+
+    Number f = -b * sdlm::log(a);
+    f.backward();
+
+    // vector of expected function gradients
+    std::vector<float> expected_gradients = {-1.0, - (float)std::log(0.5)};
+
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), -0.5 * std::log(0.5));
+
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
+    }
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
