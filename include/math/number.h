@@ -770,7 +770,7 @@ if(result.count_gradient){
         m_value = rhs;
         m_gradient = 0;
         set_grad_fn(nullptr);
-        count_gradient = true;
+        count_gradient = false;
         is_leaf = true;
 
         return *this;
