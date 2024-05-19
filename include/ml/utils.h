@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include <algorithm>
 
 #include "math/number.h"
 #include "math/tensor.h"
