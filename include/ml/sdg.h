@@ -23,6 +23,10 @@ private:
 public:
     SDG(std::vector<sdlm::Number<T>*> parameters, T learning_rate, T momentum_factor = 0.9, bool clip_gradients = false)
         : parameters(parameters), learning_rate(learning_rate), momentum_factor(momentum_factor), clip_gradients(clip_gradients), momentums(parameters.size(), 0){
+            // set all parameters to count gradients
+            for (auto& p : parameters) {
+                p->set_count_gradient(true);
+            }
     }    
 
     void step() {
