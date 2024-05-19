@@ -1,6 +1,5 @@
 #include "math/number.h"
 #include "math/tensor.h"
-#include "math/function.h"
 
 #include "ml/linear.h"
 #include "ml/activation_functions.h"
@@ -21,7 +20,6 @@ using ReLU = sdl::ReLU<double>;
 using Flatten = sdl::Flatten<double>;
 using Sequential = sdl::Sequential<double>;
 using SDG = sdl::SDG<double>;
-using Function = sdlm::Function<double>;
 
 // take the path to the mnist dataset as command line argument
 int main(int argc, char** argv) {
@@ -119,19 +117,16 @@ int main(int argc, char** argv) {
 
     std::cout << "Number of parameters: " << parameters.size() << std::endl;
 
-    Function loss_func(parameters, [&simple_network, &X, &Y]() {
-        Tensor out = simple_network.forward(X);
-        Number loss = sdl::cross_entropy(out, Y);
-        return loss;
-    });
+    // create loss function
+    std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::cross_entropy(simple_network.forward(X), Y); };
 
     // create optimizer
-    SDG sdg(parameters, loss_func, 0.001, 0.9);
+    SDG sdg(parameters, 0.01, 0.9);
 
     // train the model
     std::cout << "Training..." << std::endl;
 
-    sdg.fit_until_convergence(0.0001, true);
+    sdg.fit_until_convergence(loss_func, 0.0001, true);
 
     // print the output of the model
     std::cout << "Output: " << std::endl;
@@ -143,7 +138,7 @@ int main(int argc, char** argv) {
 
     // loss after training
     std::cout << "Loss after training: " << std::endl;
-    std::cout << loss_func.compute() << std::endl;
+    std::cout << loss_func() << std::endl;
 
 
     return 0;
