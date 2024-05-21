@@ -26,7 +26,7 @@ class Tensor {
         for (int i = 0; i < shape.size(); i++) {
             size *= shape[i];
         }
-        std::cout << "size in MB: " << size * sizeof(T) / 1000000 << std::endl;
+        // std::cout << "size in MB: " << size * sizeof(T) / 1000000 << std::endl;
         m_data = std::vector<T>(size);
     }
 
@@ -93,7 +93,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] += rhs.m_data[i];
+            result.m_data[i] = m_data[i] + rhs.m_data[i];
         }
 
         return result;
@@ -113,7 +113,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] -= rhs.m_data[i];
+            result.m_data[i] = m_data[i] - rhs.m_data[i];
         }
 
         return result;
@@ -134,7 +134,7 @@ class Tensor {
 
         for (int i = 0; i < m_shape[0]; ++i) {
             for (int j = 0; j < m_shape[1]; ++j) {
-                result.m_data[i * m_shape[1] + j] += rhs.m_data[j];
+                result.m_data[i * m_shape[1] + j] = m_data[i * m_shape[1] + j] + rhs.m_data[j];
             }
         }
 
@@ -187,7 +187,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] *= rhs.m_data[i];
+            result.m_data[i] = m_data[i] * rhs.m_data[i];
         }
 
         return result;
@@ -332,7 +332,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = -result.m_data[i];
+            result.m_data[i] = -m_data[i];
         }
 
         return result;
@@ -423,7 +423,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = std::pow(result.m_data[i], exponent);
+            result.m_data[i] = std::pow(m_data[i], exponent);
         }
 
         return result;
@@ -439,7 +439,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = std::exp(result.m_data[i]);
+            result.m_data[i] = std::exp(m_data[i]);
         }
 
         return result;
@@ -451,7 +451,7 @@ class Tensor {
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = std::log(result.m_data[i]);
+            result.m_data[i] = std::log(m_data[i]);
         }
 
         return result;
@@ -552,56 +552,56 @@ class Tensor {
     }
 
     // Activation functions
-    Tensor sigmoid() const {
+    Tensor sigmoid() {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = T(1) / (T(1) + std::exp(-result.m_data[i]));
+            result.m_data[i] = T(1) / (T(1) + std::exp(-m_data[i]));
         }
 
         return result;
     }
 
-    Tensor softmax() const {
+    Tensor softmax() {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); i += m_shape.back()) {
-            T sum = 0;
+            T sum(0);
             for (size_t j = 0; j < m_shape.back(); ++j) {
-                sum += std::exp(result.m_data[i + j]);
+                sum = sum + std::exp(m_data[i + j]);
             }
             for (size_t j = 0; j < m_shape.back(); ++j) {
-                result.m_data[i + j] = std::exp(result.m_data[i + j]) / sum;
+                result.m_data[i + j] = std::exp(m_data[i + j]) / sum;
             }
         }
 
         return result;
     }
 
-    Tensor relu() const {
+    Tensor relu() {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
             // so that the gradient is correct
-            result.m_data[i] = result.m_data[i].relu();
+            result.m_data[i] = m_data[i].relu();
         }
 
         return result;
     }
 
-    Tensor tanh() const {
+    Tensor tanh() {
         Tensor result;
         result.m_shape = m_shape;
         result.m_data = m_data;
 
         for (size_t i = 0; i < m_data.size(); ++i) {
-            result.m_data[i] = (std::exp(result.m_data[i]) - std::exp(-result.m_data[i])) / (std::exp(result.m_data[i]) + std::exp(-result.m_data[i]));
+            result.m_data[i] = (std::exp(m_data[i]) - std::exp(-m_data[i])) / (std::exp(m_data[i]) + std::exp(-m_data[i]));
         }
 
         return result;
@@ -769,7 +769,49 @@ class Tensor {
         return result;
     }
 
+    Tensor<T> head(int n) const {
+        if (n > m_shape[0]) {
+            throw std::invalid_argument("Index out of bounds");
+        }
 
+        int stride = 1;
+        for (int i = 1; i < m_shape.size(); ++i) {
+            stride *= m_shape[i];
+        }
+
+        Tensor<T> result;
+        result.m_shape = m_shape;
+        result.m_shape[0] = n;
+        result.m_data = std::vector<T>(n * stride);
+
+        for (int i = 0; i < n * stride; ++i) {
+            result.m_data[i] = m_data[i];
+        }
+
+        return result;
+    }
+
+    Tensor<T> tail(int n) const {
+        if (n > m_shape[0]) {
+            throw std::invalid_argument("Index out of bounds");
+        }
+
+        int stride = 1;
+        for (int i = 1; i < m_shape.size(); ++i) {
+            stride *= m_shape[i];
+        }
+
+        Tensor<T> result;
+        result.m_shape = m_shape;
+        result.m_shape[0] = n;
+        result.m_data = std::vector<T>(n * stride);
+
+        for (int i = 0; i < n * stride; ++i) {
+            result.m_data[i] = m_data[(m_shape[0] - n) * stride + i];
+        }
+
+        return result;
+    }
 
 
 
