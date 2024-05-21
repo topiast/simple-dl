@@ -1,10 +1,14 @@
 #include "math/number.h"
-#include "math/function.h"
+#include "math/tensor.h"
+
+#include "ml/loss_functions.h"
+
 #include <gtest/gtest.h>
 #include <vector>
 #include <cmath>
 
 using Number = sdlm::Number<float>;
+using Tensor = sdlm::Tensor<Number>;
 
 TEST(TestGradients, TestFunctionValuesAndGradients) {
     std::vector<Number*> variables;
@@ -477,29 +481,38 @@ TEST(TestGradients, TestFunctionValuesAndGradientsMultipleIterations) {
 }
 // test cross entropy loss function
 TEST(TestGradients, TestFunctionValuesAndGradientsCrossEntropy) {
+    // create tensor with 1,2,3 values
+    Tensor input({1, 3});
+    input.set_values(0, {1, 2, 3});
+    // create tensor with 1,0,0 values
+    Tensor target({1, 3});
+    target.set_values(0, {1, 0, 0});
+
     std::vector<Number*> variables;
-    Number a = 0.5;
-    Number b = 0.5;
 
-    variables.push_back(&a);
-    variables.push_back(&b);
-    // set cout gradient to true
-    for (int i = 0; i < variables.size(); i++) {
-        variables[i]->set_count_gradient(true);
+    for (auto& v : input.get_values()) {
+        variables.push_back(&v);
+        v.set_count_gradient(true);
     }
-    // sdlm::Function<float> func(variables, [&variables]() {
-    //     return -((*variables[1]) * sdlm::log((*variables[0])); 
-    // });
+    // input.print();
 
-    Number f = -b * sdlm::log(a);
+    // Number& x = input[0];
+    // (-( (std::exp(input[0]) / (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])))).log() )).backward();
+    // x.debug_print();
+    // std::cout << "softmax: " << std::endl;
+    // Number sum_exp = (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])));
+    // ???
+
+    // Number f = -(target[0] * ( (std::exp(input[0]) / sum_exp).log() ) + target[1] * ( (std::exp(input[1]) / sum_exp).log() ) + target[2] * ( (std::exp(input[2]) / sum_exp).log() ));
+    Number f = sdl::cross_entropy(input.softmax(), target);
     f.backward();
 
     // vector of expected function gradients
-    std::vector<float> expected_gradients = {-1.0, - (float)std::log(0.5)};
+    std::vector<float> expected_gradients = {-0.90996945, 0.24472848, 0.66524094};
+    // Test values
+    EXPECT_FLOAT_EQ(f.value(), 2.4076059);
 
     for (int i = 0; i < variables.size(); i++) {
-        // Test values
-        EXPECT_FLOAT_EQ(f.value(), -0.5 * std::log(0.5));
 
         // Test gradients
         // Adjust these assertions based on the expected gradient values for your function
