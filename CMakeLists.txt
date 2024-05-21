@@ -22,6 +22,7 @@ add_executable(gradients examples/gradients.cpp)
 add_executable(simple_network examples/simple_network.cpp)
 add_executable(mnist_example examples/mnist_example.cpp)
 add_executable(simple_network_xor examples/simple_network_xor.cpp)
+add_executable(simple_network_class examples/simple_network_class.cpp)
 
 # Link the library to the executable
 target_link_libraries(gradients PRIVATE math)
@@ -30,6 +31,7 @@ target_link_libraries(gradients PRIVATE math)
 target_link_libraries(simple_network PRIVATE math)
 target_link_libraries(mnist_example PRIVATE math)
 target_link_libraries(simple_network_xor PRIVATE math)
+target_link_libraries(simple_network_class PRIVATE math)
 
 # ---TESTS---
 # # Add the test executable
