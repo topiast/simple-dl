@@ -13,7 +13,7 @@ namespace sdl {
 // input is the output of the model and each row is a vector of probabilities
 template <typename T>
 sdlm::Number<T> cross_entropy(sdlm::Tensor<sdlm::Number<T>>& input, sdlm::Tensor<sdlm::Number<T>>& target) {
-    return -(target * input.log()).sum();
+    return -(target * (input.log())).sum() / input.get_shape()[0];
 }
 template <typename T>
 sdlm::Number<T> cross_entropy(sdlm::Tensor<sdlm::Number<T>>&& input, sdlm::Tensor<sdlm::Number<T>>&& target) {
