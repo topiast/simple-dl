@@ -11,15 +11,15 @@
 
 #include <iostream>
 
-using Number = sdlm::Number<double>;
+using Number = sdlm::Number<float>;
 using Tensor = sdlm::Tensor<Number>;
-using Linear = sdl::Linear<double>;
-using Sigmoid = sdl::Sigmoid<double>;
-using Softmax = sdl::Softmax<double>;
-using ReLU = sdl::ReLU<double>;
-using Flatten = sdl::Flatten<double>;
-using Sequential = sdl::Sequential<double>;
-using SDG = sdl::SDG<double>;
+using Linear = sdl::Linear<float>;
+using Sigmoid = sdl::Sigmoid<float>;
+using Softmax = sdl::Softmax<float>;
+using ReLU = sdl::ReLU<float>;
+using Flatten = sdl::Flatten<float>;
+using Sequential = sdl::Sequential<float>;
+using SDG = sdl::SDG<float>;
 
 // take the path to the mnist dataset as command line argument
 int main(int argc, char** argv) {
@@ -45,73 +45,70 @@ int main(int argc, char** argv) {
     Y = Y.one_hot(10, [](const Number& x) { return static_cast<int>(x.value()); });
 
     // to visualize the data, we write the first 10 images to file
-    for (int i = 0; i < 10; i++) {
-        Tensor X_0 = X.get_values({i});
-        // std::cout << "X_0 shape: " << std::endl;
-        // X_0.print_shape();
-        // X_0.print();
+    // for (int i = 0; i < 10; i++) {
+    //     Tensor X_0 = X.get_values({i});
+    //     // std::cout << "X_0 shape: " << std::endl;
+    //     // X_0.print_shape();
+    //     // X_0.print();
 
-        // std::cout << "X.get_values({" << i << "})" << std::endl;
+    //     // std::cout << "X.get_values({" << i << "})" << std::endl;
 
-        Number y_0 = Y.get_values()[i];
-        // std::cout << "y_0: " << y_0 << std::endl;
+    //     Number y_0 = Y.get_values()[i];
+    //     // std::cout << "y_0: " << y_0 << std::endl;
 
-        // write X_0 to file
-        std::string filename = "X_0_" + std::to_string((int)(y_0.value())) + ".tga";
+    //     // write X_0 to file
+    //     std::string filename = "X_0_" + std::to_string((int)(y_0.value())) + ".tga";
 
-        sdl::utils::write_tga_image(filename, X_0);
-    }
+    //     sdl::utils::write_tga_image(filename, X_0);
+    // }
 
     // use only 1 image for training
-    X = X.get_values({0}).reshape({1, 28, 28}).normalize(0, 1);
-    Y = Y.get_values({0}).reshape({1, 10});
+    X = X.head(10).reshape({10, 28, 28}).normalize(0, 1);
+    Y = Y.head(10).reshape({10, 10});
 
     // create a simple network
 
     Flatten* flatten = new Flatten();
-    Linear* linear1 = new Linear(784, 32);
+    Linear* linear1 = new Linear(784, 128);
     ReLU* act1 = new ReLU();
-    Linear* linear2 = new Linear(32, 10);
+    Linear* linear2 = new Linear(128, 64);
     ReLU* act2 = new ReLU();
+    Linear* linear3 = new Linear(64, 10);
     Softmax* output = new Softmax();
 
-    Sequential simple_network({flatten, linear1, act1, linear2, act2, output});
+    Sequential simple_network({flatten, linear1, act1, linear2, act2, linear3, output});
 
     simple_network.print();
 
-    // print data   
-    std::cout << "Data set: " << std::endl;
-    X.print();
+    // // print data   
+    // std::cout << "Data set: " << std::endl;
+    // X.print();
 
-    // forward each layer and print the output shape
-    std::cout << "Forward flatten layer: " << std::endl;
-    Tensor out = flatten->forward(X);
-    out.print();
+    // // forward each layer and print the output shape
+    // std::cout << "Forward flatten layer: " << std::endl;
+    // Tensor out = flatten->forward(X);
+    // out.print();
 
-    std::cout << "Forward linear1 layer: " << std::endl;
-    out = linear1->forward(out);
-    out.print();
+    // std::cout << "Forward linear1 layer: " << std::endl;
+    // out = linear1->forward(out);
+    // out.print();
 
-    std::cout << "Forward act1 layer: " << std::endl;
-    out = act1->forward(out);
-    out.print();
+    // std::cout << "Forward act1 layer: " << std::endl;
+    // out = act1->forward(out);
+    // out.print();
 
-    std::cout << "Forward linear2 layer: " << std::endl;
-    out = linear2->forward(out);
-    out.print();
+    // std::cout << "Forward linear2 layer: " << std::endl;
+    // out = linear2->forward(out);
+    // out.print();
 
-    std::cout << "Forward act2 layer: " << std::endl;
-    out = act2->forward(out);
-    out.print();
+    // std::cout << "Forward act2 layer: " << std::endl;
+    // out = act2->forward(out);
+    // out.print();
 
-    std::cout << "Forward output layer: " << std::endl;
-    out = output->forward(out);
-    out.print();
+    // std::cout << "Forward output layer: " << std::endl;
+    // out = output->forward(out);
+    // out.print();
 
-
-
-
-    
     // get parameters
     std::vector<Number*> parameters = simple_network.get_parameters();
 
