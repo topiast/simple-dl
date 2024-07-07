@@ -192,4 +192,107 @@ public:
     }
 };
 
+// element-wise power
+template <typename T>
+class PowBack : public Operator<T> {
+public:
+    PowBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~PowBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+        const Tensor<T>& b = saved_values[1];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient * b * a.pow(b - 1); 
+        Tensor<T> grad_b = gradient * a.pow(b) * a.log();
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+        this->next_evaluate(1, grad_b);
+    }
+
+    void print() const override {
+        std::cout << "PowBack" << std::endl;
+    }
+};
+
+// element-wise square root
+template <typename T>
+class SqrtBack : public Operator<T> {
+public:
+    SqrtBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~SqrtBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient / (Tensor<T>(2.f) * a.sqrt());
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "SqrtBack" << std::endl;
+    }
+};
+
+// element-wise log
+template <typename T>
+class LogBack : public Operator<T> {
+public:
+    LogBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~LogBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient / a;
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "LogBack" << std::endl;
+    }
+};
+
+// element-wise exp
+template <typename T>
+class ExpBack : public Operator<T> {
+public:
+    ExpBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~ExpBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient * a.exp();
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "ExpBack" << std::endl;
+    }
+};
+
 } // namespace sdlm

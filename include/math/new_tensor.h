@@ -599,7 +599,6 @@ class Tensor {
 
     // ELEMENTWISE MULTIPLICATION
     Tensor<T> operator*(Tensor<T>& other) {
-        std::cout << "Elementwise multiplication" << std::endl;
         if (m_shape != other.m_shape) {
             std::cout << "Error: shape mismatch" << std::endl;
             return Tensor<T>();
@@ -720,6 +719,218 @@ class Tensor {
         return result;            
     }
 
+    // POWER
+    Tensor pow(Tensor<T>& other) {
+        if (m_shape != other.m_shape) {
+            std::cout << "Error: shape mismatch" << std::endl;
+            return Tensor<T>();
+        }
+
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::pow(m_values[i], other.m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+        other.setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient() || other.requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op(), other.get_grad_op()};
+            
+            std::vector<Tensor<T>> saved_values = { *this, other };
+
+            result.set_grad_op(std::make_shared<PowBack<T>>(saved_values, next_operators));
+            
+        }
+
+        return result;            
+    }
+
+    Tensor pow(Tensor<T>&& other) {
+        return pow(other);
+    }
+
+    Tensor pow(const Tensor<T>& other) const {
+        if (m_shape != other.m_shape) {
+            std::cout << "Error: shape mismatch" << std::endl;
+            return Tensor<T>();
+        }
+
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::pow(m_values[i], other.m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+    Tensor pow(const T& other) const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::pow(m_values[i], other);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+
+    Tensor<T> operator^(Tensor<T>& other) {
+        if (m_shape == other.m_shape) {
+            // elementwise power
+            return pow(other);
+        } else if (other.m_shape.size() == 1 && other.m_shape[0] == 1) {
+            // scalar power
+            throw std::invalid_argument("Scalar power not implemented");
+        } else {
+            throw std::invalid_argument("Incompatible shapes for power operation");
+        }
+    }
+
+    Tensor<T> operator^(Tensor<T>&& other) {
+        return *this ^ other;
+    }
+
+    // overload const without gradient graph creation
+    Tensor<T> operator^(const Tensor<T>& other) const {
+        if (m_shape == other.m_shape) {
+            // elementwise power
+            return pow(other);
+        } else if (other.m_shape.size() == 1 && other.m_shape[0] == 1) {
+            // scalar power
+            throw std::invalid_argument("Scalar power not implemented");
+        } else {
+            throw std::invalid_argument("Incompatible shapes for power operation");
+        }
+    }
+
+    // SQRT
+    Tensor<T> sqrt() {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::sqrt(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op()};
+
+            result.set_grad_op(std::make_shared<SqrtBack<T>>(std::vector<Tensor<T>>{ *this }, next_operators));
+        }
+
+        return result;            
+    }
+
+    Tensor<T> sqrt() const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::sqrt(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+    // LOG
+    Tensor<T> log() {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] <= 0) {
+                std::cout << "Error: log of non-positive number" << std::endl;
+                return Tensor<T>();
+            }
+            new_values[i] = std::log(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op()};
+
+            result.set_grad_op(std::make_shared<LogBack<T>>(std::vector<Tensor<T>>{ *this }, next_operators));
+        }
+
+        return result;            
+    }
+
+    Tensor<T> log() const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] <= 0) {
+                std::cout << "Error: log of non-positive number" << std::endl;
+                return Tensor<T>();
+            }
+            new_values[i] = std::log(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+    // EXP
+    Tensor<T> exp() {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::exp(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op()};
+
+            result.set_grad_op(std::make_shared<ExpBack<T>>(std::vector<Tensor<T>>{ *this }, next_operators));
+        }
+
+        return result;            
+    }
+
+    Tensor<T> exp() const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::exp(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
     // END OF MATH OPERATIONS
 
     void backward(const Tensor& gradient = Tensor(1)) {
@@ -735,6 +946,112 @@ class Tensor {
 
 };
 
+// MATH OPERATIONS
+
+template <typename T>
+Tensor<T> pow(Tensor<T>& base, Tensor<T>& exponent) {
+    return base.pow(exponent);
+}
+
+template <typename T>
+Tensor<T> pow(Tensor<T>& base, Tensor<T>&& exponent) {
+    return base.pow(exponent);
+}
+
+template <typename T>
+Tensor<T> pow(Tensor<T>&& base, Tensor<T>& exponent) {
+    return base.pow(exponent);
+}
+
+template <typename T>
+Tensor<T> pow(Tensor<T>&& base, Tensor<T>&& exponent) {
+    return base.pow(exponent);
+}
+
+template <typename T>
+Tensor<T> log(Tensor<T>& tensor) {
+    return tensor.log();
+}
+
+template <typename T>
+Tensor<T> log(Tensor<T>&& tensor) {
+    return tensor.log();
+}
+
+template <typename T>
+Tensor<T> exp(Tensor<T>& tensor) {
+    return tensor.exp();
+}
+
+template <typename T>
+Tensor<T> exp(Tensor<T>&& tensor) {
+    return tensor.exp();
+}
+
+template <typename T>
+Tensor<T> sqrt(Tensor<T>& tensor) {
+    return tensor.sqrt();
+}
+
+template <typename T>
+Tensor<T> sqrt(Tensor<T>&& tensor) {
+    return tensor.sqrt();
+}
+
+
 } // namespace sdlm
 
+namespace std {
+    
+    template <typename T>
+    sdlm::Tensor<T> pow(sdlm::Tensor<T>& base, sdlm::Tensor<T>& exponent) {
+        return sdlm::pow(base, exponent);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> pow(sdlm::Tensor<T>& base, sdlm::Tensor<T>&& exponent) {
+        return sdlm::pow(base, exponent);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> pow(sdlm::Tensor<T>&& base, sdlm::Tensor<T>& exponent) {
+        return sdlm::pow(base, exponent);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> pow(sdlm::Tensor<T>&& base, sdlm::Tensor<T>&& exponent) {
+        return sdlm::pow(base, exponent);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> log(sdlm::Tensor<T>& tensor) {
+        return sdlm::log(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> log(sdlm::Tensor<T>&& tensor) {
+        return sdlm::log(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> exp(sdlm::Tensor<T>& tensor) {
+        return sdlm::exp(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> exp(sdlm::Tensor<T>&& tensor) {
+        return sdlm::exp(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> sqrt(sdlm::Tensor<T>& tensor) {
+        return sdlm::sqrt(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> sqrt(sdlm::Tensor<T>&& tensor) {
+        return sdlm::sqrt(tensor);
+    }
+
+} // namespace std
       
