@@ -482,6 +482,79 @@ TEST(TestGradients, TestFunctionValuesAndGradientsMultipleIterations) {
         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
     }
 }
+
+// test sin
+TEST(TestGradients, TestFunctionValuesAndGradientsSin) {
+    std::vector<Tensor*> variables;
+    Tensor a = rand() % 10;
+
+    variables.push_back(&a);
+
+    a.set_requires_gradient(true);
+
+    Tensor f = sdlm::sin(a);
+    f.backward();
+
+    float value = std::sin(a.value());
+
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), value);
+
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), std::cos(a.value()));
+    }
+}
+
+// test cos
+TEST(TestGradients, TestFunctionValuesAndGradientsCos) {
+    std::vector<Tensor*> variables;
+    Tensor a = rand() % 10;
+
+    variables.push_back(&a);
+
+    a.set_requires_gradient(true);
+
+    Tensor f = sdlm::cos(a);
+    f.backward();
+
+    float value = std::cos(a.value());
+
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), value);
+
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), -std::sin(a.value()));
+    }
+}
+
+// test tan
+TEST(TestGradients, TestFunctionValuesAndGradientsTan) {
+    std::vector<Tensor*> variables;
+    Tensor a = rand() % 10;
+
+    variables.push_back(&a);
+
+    a.set_requires_gradient(true);
+
+    Tensor f = sdlm::tan(a);
+    f.backward();
+
+    float value = std::tan(a.value());
+
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), value);
+
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), value * value + 1);
+    }
+}
+
 // // test cross entropy loss function
 // TEST(TestGradients, TestFunctionValuesAndGradientsCrossEntropy) {
 //     // create tensor with 1,2,3 values

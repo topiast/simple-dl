@@ -907,17 +907,18 @@ class Tensor {
         return result;            
     }
 
-    Tensor pow(const T& other) const {
-        std::vector<T> new_values(m_values.size());
-        for (int i = 0; i < m_values.size(); i++) {
-            new_values[i] = std::pow(m_values[i], other);
-        }
+    // Tensor pow(const T& other) const {
+    //     std::vector<T> new_values(m_values.size());
+    //     for (int i = 0; i < m_values.size(); i++) {
+    //         new_values[i] = std::pow(m_values[i], other);
+    //     }
 
-        Tensor<T> result(m_shape, new_values);
-        result.set_leaf(false);
+    //     Tensor<T> result(m_shape, new_values);
+    //     result.set_leaf(false);
 
-        return result;            
-    }
+    //     return result;            
+    // }
+
 
 
     Tensor<T> operator^(Tensor<T>& other) {
@@ -1101,6 +1102,115 @@ class Tensor {
         return result;            
     }
 
+    // TRIGONOMETRIC FUNCTIONS
+    // SIN
+    Tensor<T> sin() {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::sin(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op()};
+
+            result.set_grad_op(std::make_shared<SinBack<T>>(std::vector<Tensor<T>>{ *this }, next_operators));
+        }
+
+        return result;            
+    }
+
+    Tensor<T> sin() const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::sin(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+    // COS
+    Tensor<T> cos() {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::cos(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op()};
+
+            result.set_grad_op(std::make_shared<CosBack<T>>(std::vector<Tensor<T>>{ *this }, next_operators));
+        }
+
+        return result;            
+    }
+
+    Tensor<T> cos() const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::cos(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+    // TAN
+    Tensor<T> tan() {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::tan(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op()};
+
+            result.set_grad_op(std::make_shared<TanBack<T>>(std::vector<Tensor<T>>{ *this }, next_operators));
+        }
+
+        return result;            
+    }
+
+    Tensor<T> tan() const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::tan(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
 
 
     // END OF MATH OPERATIONS
@@ -1180,6 +1290,32 @@ Tensor<T> abs(Tensor<T>&& tensor) {
     return tensor.abs();
 }
 
+template <typename T>
+Tensor<T> sin(Tensor<T>& tensor) {
+    return tensor.sin();
+}
+
+template <typename T>
+Tensor<T> sin(Tensor<T>&& tensor) {
+    return tensor.sin();
+}
+
+template <typename T>
+Tensor<T> cos(Tensor<T>& tensor) {
+    return tensor.cos();
+}
+
+template <typename T>
+Tensor<T> cos(Tensor<T>&& tensor) {
+    return tensor.cos();
+}
+
+template <typename T>
+Tensor<T> tan(Tensor<T>& tensor) {
+    return tensor.tan();
+}
+
+
 
 } // namespace sdlm
 
@@ -1243,6 +1379,36 @@ namespace std {
     template <typename T>
     sdlm::Tensor<T> abs(sdlm::Tensor<T>&& tensor) {
         return sdlm::abs(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> sin(sdlm::Tensor<T>& tensor) {
+        return sdlm::sin(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> sin(sdlm::Tensor<T>&& tensor) {
+        return sdlm::sin(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> cos(sdlm::Tensor<T>& tensor) {
+        return sdlm::cos(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> cos(sdlm::Tensor<T>&& tensor) {
+        return sdlm::cos(tensor);
+    }
+    
+    template <typename T>
+    sdlm::Tensor<T> tan(sdlm::Tensor<T>& tensor) {
+        return sdlm::tan(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> tan(sdlm::Tensor<T>&& tensor) {
+        return sdlm::tan(tensor);
     }
 
 } // namespace std

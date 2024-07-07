@@ -320,4 +320,80 @@ public:
     }
 };
 
+// element-wise sin
+template <typename T>
+class SinBack : public Operator<T> {
+public:
+    SinBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~SinBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient * a.cos();
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "SinBack" << std::endl;
+    }
+};
+
+// element-wise cos
+template <typename T>
+class CosBack : public Operator<T> {
+public:
+    CosBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~CosBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        // calculate the gradients
+        Tensor<T> grad_a = -gradient * a.sin();
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "CosBack" << std::endl;
+    }
+};
+
+// element-wise tan
+template <typename T>
+class TanBack : public Operator<T> {
+public:
+    TanBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~TanBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient / a.cos().pow(2.f);
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "TanBack" << std::endl;
+    }
+};
+
+
 } // namespace sdlm
