@@ -22,42 +22,43 @@ int main() {
         var->set_requires_gradient(true);
     }
 
-    b.set_requires_gradient(false);
+    // b.set_requires_gradient(false);
 
     
 
-    a = d + (e * c) - b; // 4 + (5 * 3) / 2 = 4 + 7.5 = 11.5
+    a = d + (e * c) - b; // 4 + 5 * 3 - 2 = 15
 
     // gradients:
-    // da = 1
-    // db = -5 * 3 / 2^2 = -3.75
-    // dc = 5 / 2 = 2.5
+    // da = 0
+    // db = -1
+    // dc = 5
     // dd = 1
-    // de = 3 / 2 = 1.5
+    // de = 3
+
 
 
     // a = b * c + d;
 
     std::cout << "----Forward pass:----\n" << std::endl;
 
-    c.print();
-    b.print();
     a.print();
+    b.print();
+    c.print();
     d.print();
     e.print();
 
     std::cout << "----Gradients:----\n" << std::endl;
 
-    c.gradient_tensor().print();
-    b.gradient_tensor().print();
     a.gradient_tensor().print();
+    b.gradient_tensor().print();
+    c.gradient_tensor().print();
     d.gradient_tensor().print();
     e.gradient_tensor().print();
 
 
     std::cout << "Result: " << a.value() << std::endl;
 
-    std::cout << "----Backward pass:----\n" << std::endl;
+    std::cout << "\n----Backward pass:----\n" << std::endl;
     a.backward();
 
     a.print();
@@ -68,9 +69,9 @@ int main() {
 
     std::cout << "----Gradients:----\n" << std::endl;
 
-    c.gradient_tensor().print();
-    b.gradient_tensor().print();
     a.gradient_tensor().print();
+    b.gradient_tensor().print();
+    c.gradient_tensor().print();
     d.gradient_tensor().print();
     e.gradient_tensor().print();
 

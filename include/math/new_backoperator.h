@@ -164,4 +164,32 @@ public:
     }
 };
 
+// element-wise division
+template <typename T>
+class DivBack : public Operator<T> {
+public:
+    DivBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~DivBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+        const Tensor<T>& b = saved_values[1];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient / b; 
+        Tensor<T> grad_b = -gradient * a / (b * b);
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+        this->next_evaluate(1, grad_b);
+    }
+
+    void print() const override {
+        std::cout << "DivBack" << std::endl;
+    }
+};
+
 } // namespace sdlm

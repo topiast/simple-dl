@@ -623,7 +623,7 @@ class Tensor {
         if (requires_grad) {
             std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op(), other.get_grad_op()};
             
-            std::vector<Tensor<T>> saved_values = { this, &other };
+            std::vector<Tensor<T>> saved_values = { *this, other };
 
             result.set_grad_op(std::make_shared<MulBack<T>>(saved_values, next_operators));
             
@@ -649,6 +649,69 @@ class Tensor {
         for (int i = 0; i < m_values.size(); i++) {
             
             new_values[i] = m_values[i] * other.m_values[i];
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+    // ELEMENTWISE DIVISION
+    Tensor<T> operator/(Tensor<T>& other) {
+        if (m_shape != other.m_shape) {
+            std::cout << "Error: shape mismatch" << std::endl;
+            return Tensor<T>();
+        }
+
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            if (other.m_values[i] == 0) {
+                std::cout << "Error: division by zero" << std::endl;
+                return Tensor<T>();
+            }
+            new_values[i] = m_values[i] / other.m_values[i];
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+        other.setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient() || other.requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op(), other.get_grad_op()};
+            
+            std::vector<Tensor<T>> saved_values = { *this, other };
+
+            result.set_grad_op(std::make_shared<DivBack<T>>(saved_values, next_operators));
+            
+        }
+
+        return result;            
+    }
+
+    Tensor<T> operator/(Tensor<T>&& other) {
+        return *this / other;
+    }
+
+    // overload const without gradient graph creation
+    Tensor<T> operator/(const Tensor<T>& other) const {
+        if (m_shape != other.m_shape) {
+            std::cout << "Error: shape mismatch" << std::endl;
+            return Tensor<T>();
+        }
+
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            if (other.m_values[i] == 0) {
+                std::cout << "Error: division by zero" << std::endl;
+                return Tensor<T>();
+            }
+            new_values[i] = m_values[i] / other.m_values[i];
         }
 
         Tensor<T> result(m_shape, new_values);
