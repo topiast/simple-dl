@@ -295,4 +295,29 @@ public:
     }
 };
 
+// element-wise abs
+template <typename T>
+class AbsBack : public Operator<T> {
+public:
+    AbsBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~AbsBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        // calculate the gradients
+        Tensor<T> grad_a = gradient * (a > 0.f ? Tensor<T>(1.f) : Tensor<T>(-1.f));
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "AbsBack" << std::endl;
+    }
+};
+
 } // namespace sdlm

@@ -204,40 +204,40 @@ TEST(TestGradients, TestFunctionValuesAndGradientsSqrt) {
     }
 }
 
-// // test abs
-// TEST(TestGradients, TestFunctionValuesAndGradientsAbs) {
-//     std::vector<Tensor*> variables;
-//     Tensor a = 1;
-//     Tensor b = 2;
-//     Tensor c = 3;
+// test abs
+TEST(TestGradients, TestFunctionValuesAndGradientsAbs) {
+    std::vector<Tensor*> variables;
+    Tensor a = 1;
+    Tensor b = 2;
+    Tensor c = 3;
 
-//     variables.push_back(&a);
-//     variables.push_back(&b);
-//     variables.push_back(&c);
-//     // set cout gradient to true
-//     for (int i = 0; i < variables.size(); i++) {
-//         variables[i]->set_requires_gradient(true);
-//     }
-//     // sdlm::Function<float> func(variables, [&variables]() {
-//     //     return sdlm::abs((*variables[0])) + (*variables[2]) * 2; // abs(1) + 3 * 2 = 7
-//     // });
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_requires_gradient(true);
+    }
+    // sdlm::Function<float> func(variables, [&variables]() {
+    //     return sdlm::abs((*variables[0])) + (*variables[2]) * 2; // abs(1) + 3 * 2 = 7
+    // });
 
-//     Tensor f = sdlm::abs(a) + c * 2;
+    Tensor f = sdlm::abs(a) + c * 2;
 
-//     f.backward();
+    f.backward();
 
-//     // vector of expected function gradients
-//     std::vector<float> expected_gradients = {1, 0, 2};
+    // vector of expected function gradients
+    std::vector<float> expected_gradients = {1, 0, 2};
 
-//     for (int i = 0; i < variables.size(); i++) {
-//         // Test values
-//         EXPECT_FLOAT_EQ(f.value(), 7);
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), 7);
 
-//         // Test gradients
-//         // Adjust these assertions based on the expected gradient values for your function
-//         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
-//     }
-// }
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
+    }
+}
 
 // test sdlm
 TEST(TestGradients, TestFunctionValuesAndGradientssdlm) {
@@ -404,84 +404,84 @@ TEST(TestGradients, TestFunctionValuesAndGradientsSigmoid) {
 
 }
 
-// // test same variable multiple times in function
-// TEST(TestGradients, TestFunctionValuesAndGradientsSameVariable) {
-//     std::vector<Tensor*> variables;
-//     Tensor a = 1;
-//     Tensor b = 2;
-//     Tensor c = 3;
+// test same variable multiple times in function
+TEST(TestGradients, TestFunctionValuesAndGradientsSameVariable) {
+    std::vector<Tensor*> variables;
+    Tensor a = 1;
+    Tensor b = 2;
+    Tensor c = 3;
 
-//     variables.push_back(&a);
-//     variables.push_back(&b);
-//     variables.push_back(&c);
-//     // set cout gradient to true
-//     for (int i = 0; i < variables.size(); i++) {
-//         variables[i]->set_requires_gradient(true);
-//     }
-//     // sdlm::Function<float> func(variables, [&variables]() {
-//     //     return (*variables[0]) * (*variables[0]) + (*variables[0]) * 2; // 1 * 1 + 1 * 2 = 3
-//     // });
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_requires_gradient(true);
+    }
+    // sdlm::Function<float> func(variables, [&variables]() {
+    //     return (*variables[0]) * (*variables[0]) + (*variables[0]) * 2; // 1 * 1 + 1 * 2 = 3
+    // });
 
-//     Tensor f = a * a + a * 2;
+    Tensor f = a * a + a * 2;
     
-//     f.backward();
+    f.backward();
 
 
-//     // vector of expected function gradients
-//     std::vector<float> expected_gradients = {4, 0, 0};
+    // vector of expected function gradients
+    std::vector<float> expected_gradients = {4, 0, 0};
 
-//     for (int i = 0; i < variables.size(); i++) {
-//         // Test values
-//         EXPECT_FLOAT_EQ(f.value(), 3);
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), 3);
 
-//         // Test gradients
-//         // Adjust these assertions based on the expected gradient values for your function
-//         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
-//     }
-// }
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
+    }
+}
 
-// // test multiple iterations of backward and zero_grad
-// TEST(TestGradients, TestFunctionValuesAndGradientsMultipleIterations) {
-//     std::vector<Tensor*> variables;
-//     Tensor a = 1;
-//     Tensor b = 2;
-//     Tensor c = 3;
+// test multiple iterations of backward and zero_grad
+TEST(TestGradients, TestFunctionValuesAndGradientsMultipleIterations) {
+    std::vector<Tensor*> variables;
+    Tensor a = 1;
+    Tensor b = 2;
+    Tensor c = 3;
 
-//     variables.push_back(&a);
-//     variables.push_back(&b);
-//     variables.push_back(&c);
-//     // set cout gradient to true
-//     for (int i = 0; i < variables.size(); i++) {
-//         variables[i]->set_requires_gradient(true);
-//     }
-//     // sdlm::Function<float> func(variables, [&variables]() {
-//     //     return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
-//     // });
+    variables.push_back(&a);
+    variables.push_back(&b);
+    variables.push_back(&c);
+    // set cout gradient to true
+    for (int i = 0; i < variables.size(); i++) {
+        variables[i]->set_requires_gradient(true);
+    }
+    // sdlm::Function<float> func(variables, [&variables]() {
+    //     return (*variables[0]) * (*variables[1]) + (*variables[2]) * 2; // 1 * 2 + 3 * 2 = 8
+    // });
 
-//     Tensor f = sdlm::pow(a * b + c * 2, b) + c * 2;
-//     float value = f.value();
-//     for (auto& p : variables) {
-//         p->zero_grad();
-//     }
-//     f.backward();
-//     f = sdlm::pow(a * b + c * 2, b) + c * 2;
-//     for (auto& p : variables) {
-//         p->zero_grad();
-//     }
-//     f.backward();
+    Tensor f = sdlm::pow(a * b + c * 2, b) + c * 2;
+    float value = f.value();
+    for (auto& p : variables) {
+        p->zero_grad();
+    }
+    f.backward();
+    f = sdlm::pow(a * b + c * 2, b) + c * 2;
+    for (auto& p : variables) {
+        p->zero_grad();
+    }
+    f.backward();
 
-//     // vector of expected function gradients
-//     std::vector<float> expected_gradients = {32, 149.08426, 34};
+    // vector of expected function gradients
+    std::vector<float> expected_gradients = {32, 149.08426, 34};
 
-//     for (int i = 0; i < variables.size(); i++) {
-//         // Test values
-//         EXPECT_FLOAT_EQ(f.value(), value);
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), value);
 
-//         // Test gradients
-//         // Adjust these assertions based on the expected gradient values for your function
-//         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
-//     }
-// }
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
+    }
+}
 // // test cross entropy loss function
 // TEST(TestGradients, TestFunctionValuesAndGradientsCrossEntropy) {
 //     // create tensor with 1,2,3 values

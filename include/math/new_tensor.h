@@ -281,7 +281,7 @@ class Tensor {
         }
 
         void zero_grad() {
-            if (m_gradients != nullptr && m_gradients.size() > 0) {
+            if (m_gradients.size() > 0) { // NOTE: may not always be initialized
                 for (int i = 0; i < m_gradients.size(); i++) {
                     m_gradients[i] = 0;
                 }
@@ -452,6 +452,140 @@ class Tensor {
         if (requires_gradient() && is_leaf() && get_grad_op() == nullptr) {
             set_grad_op(std::make_shared<AccumulateGrad<T>>(this));
         }
+    }
+
+    // COMPARISSON OPERATIONS
+    // EQUALITY
+    bool operator==(const Tensor<T>& rhs) const {
+        if (m_shape != rhs.m_shape) {
+            return false;
+        }
+
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] != rhs.m_values[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator==(const T& rhs) const {
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] != rhs) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator!=(const Tensor<T>& rhs) const {
+        return !(*this == rhs);
+    }
+
+    bool operator!=(const T& rhs) const {
+        return !(*this == rhs);
+    }
+
+    // GREATER THAN
+    bool operator>(const Tensor<T>& rhs) const {
+        if (m_shape != rhs.m_shape) {
+            throw std::invalid_argument("Shape mismatch");
+        }
+
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] <= rhs.m_values[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator>(const T& rhs) const {
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] <= rhs) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // LESS THAN
+    bool operator<(const Tensor<T>& rhs) const {
+        if (m_shape != rhs.m_shape) {
+            throw std::invalid_argument("Shape mismatch");
+        }
+
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] >= rhs.m_values[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator<(const T& rhs) const {
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] >= rhs) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // GREATER THAN OR EQUAL TO
+    bool operator>=(const Tensor<T>& rhs) const {
+        if (m_shape != rhs.m_shape) {
+            throw std::invalid_argument("Shape mismatch");
+        }
+
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] < rhs.m_values[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator>=(const T& rhs) const {
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] < rhs) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // LESS THAN OR EQUAL TO
+    bool operator<=(const Tensor<T>& rhs) const {
+        if (m_shape != rhs.m_shape) {
+            throw std::invalid_argument("Shape mismatch");
+        }
+
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] > rhs.m_values[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator<=(const T& rhs) const {
+        for (int i = 0; i < m_values.size(); i++) {
+            if (m_values[i] > rhs) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // MATH OPERATIONS
@@ -931,6 +1065,44 @@ class Tensor {
         return result;            
     }
 
+    // ABS
+    Tensor<T> abs() {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::abs(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op()};
+
+            result.set_grad_op(std::make_shared<AbsBack<T>>(std::vector<Tensor<T>>{ *this }, next_operators));
+        }
+
+        return result;            
+    }
+
+    Tensor<T> abs() const {
+        std::vector<T> new_values(m_values.size());
+        for (int i = 0; i < m_values.size(); i++) {
+            new_values[i] = std::abs(m_values[i]);
+        }
+
+        Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+
+
     // END OF MATH OPERATIONS
 
     void backward(const Tensor& gradient = Tensor(1)) {
@@ -998,6 +1170,16 @@ Tensor<T> sqrt(Tensor<T>&& tensor) {
     return tensor.sqrt();
 }
 
+template <typename T>
+Tensor<T> abs(Tensor<T>& tensor) {
+    return tensor.abs();
+}
+
+template <typename T>
+Tensor<T> abs(Tensor<T>&& tensor) {
+    return tensor.abs();
+}
+
 
 } // namespace sdlm
 
@@ -1051,6 +1233,16 @@ namespace std {
     template <typename T>
     sdlm::Tensor<T> sqrt(sdlm::Tensor<T>&& tensor) {
         return sdlm::sqrt(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> abs(sdlm::Tensor<T>& tensor) {
+        return sdlm::abs(tensor);
+    }
+
+    template <typename T>
+    sdlm::Tensor<T> abs(sdlm::Tensor<T>&& tensor) {
+        return sdlm::abs(tensor);
     }
 
 } // namespace std
