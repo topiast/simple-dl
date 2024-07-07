@@ -69,11 +69,11 @@ int main(int argc, char** argv) {
     // create a simple network
 
     Flatten* flatten = new Flatten();
-    Linear* linear1 = new Linear(784, 128);
+    Linear* linear1 = new Linear(784, 32);
     ReLU* act1 = new ReLU();
-    Linear* linear2 = new Linear(128, 64);
+    Linear* linear2 = new Linear(32, 16);
     ReLU* act2 = new ReLU();
-    Linear* linear3 = new Linear(64, 10);
+    Linear* linear3 = new Linear(16, 10);
     Softmax* output = new Softmax();
 
     Sequential simple_network({flatten, linear1, act1, linear2, act2, linear3, output});

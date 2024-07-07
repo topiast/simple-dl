@@ -72,7 +72,7 @@ public:
     }
 
     std::string get_name() override {
-        return "Linear";
+        return "Linear(" + std::to_string(weights.get_shape()[0]) + ", " + std::to_string(weights.get_shape()[1]) + ")";
     }
 
 
