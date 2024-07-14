@@ -1,6 +1,6 @@
-// #include "math/Tensor.h"
+// #include "math/old_tensor.h"
 // #include "math/function.h"
-#include "math/new_tensor.h"
+#include "math/tensor.h"
 #include <iostream>
 #include <vector>
 

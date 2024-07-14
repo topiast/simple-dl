@@ -1,6 +1,6 @@
-// #include "math/Tensor.h"
-// #include "math/tensor.h"
-#include "math/new_tensor.h"
+// #include "math/old_tensor.h"
+// #include "math/old_tensor.h"
+#include "math/tensor.h"
 
 // #include "ml/loss_functions.h"
 

@@ -1,5 +1,5 @@
 #include "math/number.h"
-#include "math/tensor.h"
+#include "math/old_tensor.h"
 #include "ml/linear_model.h"
 
 #include <gtest/gtest.h>

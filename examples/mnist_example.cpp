@@ -1,5 +1,5 @@
 #include "math/number.h"
-#include "math/tensor.h"
+#include "math/old_tensor.h"
 
 #include "ml/linear.h"
 #include "ml/activation_functions.h"

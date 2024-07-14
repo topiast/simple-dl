@@ -5,7 +5,7 @@
 #include <string>
 
 #include "math/number.h"
-#include "math/tensor.h"
+#include "math/old_tensor.h"
 
 // using namespace sdlm;
 

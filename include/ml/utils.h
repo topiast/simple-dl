@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "math/number.h"
-#include "math/tensor.h"
+#include "math/old_tensor.h"
 
 namespace sdl {
 

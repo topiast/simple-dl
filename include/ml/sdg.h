@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "math/number.h"
-#include "math/tensor.h"
+#include "math/old_tensor.h"
 #include "math/function.h"
 
 

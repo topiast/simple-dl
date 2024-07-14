@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "math/new_tensor.h"
+#include "math/tensor.h"
 
 // Test case for matmul operation
 TEST(TensorTest, MatMul) {
