@@ -1,10 +1,10 @@
-#include "math/number.h"
-#include "math/function.h"
-#include "math/tensor.h"
+// #include "math/number.h"
+// #include "math/function.h"
+#include "math/new_tensor.h"
 #include <iostream>
 #include <vector>
 
-using Number = sdlm::Number<float>;
+// using Number = sdlm::Number<float>;
 
 
 int main() {
@@ -79,12 +79,12 @@ int main() {
     // print tensor3
     std::cout << "Tensor3: " << std::endl;
     tensor3.print();
-    tensor3.print_data();
+    // tensor3.print_data();
 
     // print tensor4
     std::cout << "Tensor4: " << std::endl;
     tensor4.print();
-    tensor4.print_data();
+    // tensor4.print_data();
 
     result2 = tensor3 * tensor3;
     std::cout << "Result for tensor element-wise product t3 * t3: " << std::endl;

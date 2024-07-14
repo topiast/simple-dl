@@ -137,6 +137,16 @@ class Tensor {
             // m_gradients.resize(m_strides[0] * m_shape[0], 0);
         }
 
+        void ones(const std::vector<int>& shape) {
+            m_shape = shape;
+            m_strides.resize(m_shape.size());
+            m_strides[m_shape.size() - 1] = 1;
+            for (int i = m_shape.size() - 2; i >= 0; i--) {
+                m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
+            }
+            m_values.resize(m_strides[0] * m_shape[0], 1);
+            // m_gradients.resize(m_strides[0] * m_shape[0], 0);
+        }
         
 
         Tensor& random(const std::vector<int>& shape, float mean = 0.f, float stddev = 1.f) {
@@ -202,19 +212,6 @@ class Tensor {
             return Tensor<T>(new_shape, std::vector<T>(m_values.begin(), m_values.begin() + n * m_strides[0]));
         }
 
-        Tensor<T> reshape(const std::vector<int>& new_shape) const {
-            int new_size = 1;
-            for (int i = 0; i < new_shape.size(); i++) {
-                new_size *= new_shape[i];
-            }
-
-            if (new_size != m_values.size()) {
-                std::cout << "Error: reshape size mismatch" << std::endl;
-                return Tensor<T>();
-            }
-
-            return Tensor<T>(new_shape, m_values);
-        }
 
         Tensor<T> normalize(const T& min, const T& max) const {
             std::vector<T> new_values = m_values;
@@ -256,6 +253,37 @@ class Tensor {
             }
 
             return result;
+        }
+
+        Tensor transpose() const {
+            if (m_shape.size() != 2) {
+                throw std::invalid_argument("Incompatible shape for transpose");
+            }
+
+            Tensor result;
+            result.zeros({m_shape[1], m_shape[0]});
+
+            for (size_t i = 0; i < m_shape[0]; ++i) {
+                for (size_t j = 0; j < m_shape[1]; ++j) {
+                    result.m_values[j * m_shape[0] + i] = m_values[i * m_shape[1] + j];
+                }
+            }
+
+            return result;
+        }
+
+        Tensor<T> reshape(const std::vector<int>& new_shape) {
+            int new_size = 1;
+            for (int i = 0; i < new_shape.size(); i++) {
+                new_size *= new_shape[i];
+            }
+
+            if (new_size != m_values.size()) {
+                std::cout << "Error: reshape size mismatch" << std::endl;
+                return Tensor<T>();
+            }
+
+            return Tensor<T>(new_shape, m_values);
         }
 
         // Tensor<T> transpose() const {
@@ -374,6 +402,47 @@ class Tensor {
     template<typename... Args>
     void set_values(const std::vector<int>& indices, Args... args) {
         set_values(indices, {static_cast<T>(args)...});
+    }
+
+    // Get index from multi-dimensional indices
+    int get_index(const std::vector<int>& indices) const {
+        int index = 0;
+        for (int i = 0; i < indices.size(); ++i) {
+            index += indices[i] * m_strides[i];
+        }
+        return index;
+    }
+
+    // Overloaded operator() function for getting values at a single index
+    T& operator()(int index) {
+        return m_values[index];
+    }
+
+    // Overloaded operator() function for getting values at a single index
+    T operator()(int index) const {
+        return m_values[index];
+    }
+
+    // Overloaded operator() function for getting values at multi-dimensional indices
+    T& operator()(const std::vector<int>& indices) {
+        return m_values[get_index(indices)];
+    }
+
+    // Overloaded operator() function for getting values at multi-dimensional indices
+    T operator()(const std::vector<int>& indices) const {
+        return m_values[get_index(indices)];
+    }
+
+    // Overloaded operator() function for getting values at multi-dimensional indices using variadic templates
+    template<typename... Args>
+    T& operator()(Args... args) {
+        return m_values[get_index({static_cast<int>(args)...})];
+    }
+
+    // Overloaded operator() function for getting values at multi-dimensional indices using variadic templates
+    template<typename... Args>
+    T operator()(Args... args) const {
+        return m_values[get_index({static_cast<int>(args)...})];
     }
 
     // TODO: do not calculate the strides
@@ -588,11 +657,180 @@ class Tensor {
         return true;
     }
 
+    // reduce sum
+    Tensor<T> reduce_sum(int axis) const {
+        if (axis < 0 || axis >= m_shape.size()) {
+            throw std::invalid_argument("Invalid axis");
+        }
+
+        std::vector<int> shape = m_shape;
+
+        int outer_dim = 1;
+        for (int i = 0; i < axis; ++i) {
+            outer_dim *= shape[i];
+        }
+
+        int reduce_dim = shape[axis];
+        int inner_dim = 1;
+        for (int i = axis + 1; i < shape.size(); ++i) {
+            inner_dim *= shape[i];
+        }
+
+        std::vector<T> result(outer_dim * inner_dim, 0);
+
+        int total_size = m_values.size();
+        for (int i = 0; i < total_size; ++i) {
+            int outer_idx = i / (reduce_dim * inner_dim);
+            int inner_idx = i % inner_dim;
+            result[outer_idx * inner_dim + inner_idx] += m_values[i];
+        }
+
+        shape.erase(shape.begin() + axis);
+        return Tensor<T>(shape, result);
+    }
+
     // MATH OPERATIONS
     // TODO: add, subtract, multiply, divide, power, sqrt, exp, log, abs, sum, mean, dot, matmul, conv2d, maxpool2d, avgpool2d, relu, softmax, sigmoid, tanh
 
     // ADDITION
     Tensor<T> operator+(Tensor<T>& rhs) {
+        if (m_shape == rhs.m_shape) {
+            return add(rhs);
+        } 
+
+        // broadcast
+        if (m_shape.size() > rhs.m_shape.size()) {
+            return broadcast_add(rhs);
+        } else {
+            return rhs.broadcast_add(*this);
+        }
+    }
+
+    Tensor<T> operator+(Tensor<T>&& rhs) {
+        return *this + rhs;
+    }
+
+    // overload const without gradient graph creation
+    Tensor<T> operator+(const Tensor<T>& other) const {
+        if (m_shape == other.m_shape) {
+            return add(other);
+        } 
+
+        // broadcast
+        if (m_shape.size() > other.m_shape.size()) {
+            return broadcast_add(other);
+        } else {
+            return other.broadcast_add(*this);
+        }
+    }
+
+    // broadcast addition
+    Tensor<T> broadcast_add(Tensor<T>& rhs) {
+        // Get the shapes of lhs and rhs
+        const auto& lhs_shape = shape();
+        const auto& rhs_shape = rhs.shape();
+
+        // Ensure rhs has one less dimension than lhs
+        if (rhs_shape.size() + 1 != lhs_shape.size()) {
+            throw std::invalid_argument("RHS must have one dimension less than LHS.");
+        }
+
+        // Ensure all dimensions of rhs match corresponding dimensions of lhs except for the one dimension less
+        for (size_t i = 0; i < rhs_shape.size(); ++i) {
+            if (rhs_shape[i] != lhs_shape[i + 1]) {
+                throw std::invalid_argument("Dimension mismatch between LHS and RHS.");
+            }
+        }
+
+        // Create a new tensor with the shape of lhs
+        Tensor<T> result(lhs_shape);
+
+        // get the first dimension of rhs
+        int rhs_dim = rhs_shape[0];
+
+        // iterate over the values of the new tensor
+        for (int i = 0; i < result.m_values.size(); i++) {
+            // get the index of the current value in the new tensor
+            std::vector<int> index(lhs_shape.size(), 0);
+            int temp = i;
+            for (int j = 1; j < lhs_shape.size(); j++) {
+                index[j] = temp / result.m_strides[j];
+                temp = temp % result.m_strides[j];
+            }
+
+            // add the value of the current index in lhs to the value of the current index in rhs
+            result.m_values[i] = m_values[i] + rhs.m_values[i % rhs_dim];
+        }
+
+
+        
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+        rhs.setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient() || rhs.requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op(), rhs.get_grad_op()};
+
+            result.set_grad_op(std::make_shared<AddBack<T>>(next_operators));
+        }
+
+        return result;
+    }
+
+    Tensor<T> broadcast_add(Tensor<T>&& rhs) {
+        return *this + rhs;
+    }
+
+    // overload const without gradient graph creation
+    Tensor<T> broadcast_add(const Tensor<T>& rhs) const {
+        // Get the shapes of lhs and rhs
+        const auto& lhs_shape = shape();
+        const auto& rhs_shape = rhs.shape();
+
+        // Ensure rhs has one less dimension than lhs
+        if (rhs_shape.size() + 1 != lhs_shape.size()) {
+            throw std::invalid_argument("RHS must have one dimension less than LHS.");
+        }
+
+        // Ensure all dimensions of rhs match corresponding dimensions of lhs except for the one dimension less
+        for (size_t i = 0; i < rhs_shape.size(); ++i) {
+            if (rhs_shape[i] != lhs_shape[i + 1]) {
+                throw std::invalid_argument("Dimension mismatch between LHS and RHS.");
+            }
+        }
+
+        // Create a new tensor with the shape of lhs
+        Tensor<T> result(lhs_shape);
+
+        // get the first dimension of rhs
+        int rhs_dim = rhs_shape[0];
+
+        // iterate over the values of the new tensor
+        for (int i = 0; i < result.m_values.size(); i++) {
+            // get the index of the current value in the new tensor
+            std::vector<int> index(lhs_shape.size(), 0);
+            int temp = i;
+            for (int j = 1; j < lhs_shape.size(); j++) {
+                index[j] = temp / result.m_strides[j];
+                temp = temp % result.m_strides[j];
+            }
+
+            // add the value of the current index in lhs to the value of the current index in rhs
+            result.m_values[i] = m_values[i] + rhs.m_values[i % rhs_dim];
+        }
+
+        
+        result.set_leaf(false);
+
+        return result;
+    }
+
+
+    Tensor<T> add(Tensor<T>& rhs) {
         if (m_shape != rhs.m_shape) {
             std::cout << "Error: shape mismatch" << std::endl;
             return Tensor<T>();
@@ -621,12 +859,12 @@ class Tensor {
 
         return result;            
     }
-    Tensor<T> operator+(Tensor<T>&& rhs) {
+    Tensor<T> add(Tensor<T>&& rhs) {
         return *this + rhs;
     }
 
     // overload const without gradient graph creation
-    Tensor<T> operator+(const Tensor<T>& other) const {
+    Tensor<T> add(const Tensor<T>& other) const {
         if (m_shape != other.m_shape) {
             std::cout << "Error: shape mismatch" << std::endl;
             return Tensor<T>();
@@ -907,6 +1145,7 @@ class Tensor {
         return result;            
     }
 
+    // TODO: figure this out
     // Tensor pow(const T& other) const {
     //     std::vector<T> new_values(m_values.size());
     //     for (int i = 0; i < m_values.size(); i++) {
@@ -1206,6 +1445,99 @@ class Tensor {
         }
 
         Tensor<T> result(m_shape, new_values);
+        result.set_leaf(false);
+
+        return result;            
+    }
+
+    // TENSOR SPESIFIC OPERATIONS
+    // SUM
+    Tensor<T> sum() {
+        T sum = 0;
+        for (int i = 0; i < m_values.size(); i++) {
+            sum += m_values[i];
+        }
+
+        return Tensor<T>(std::vector<T>{sum}, std::vector<int>{1});
+    }
+
+    Tensor<T> sum() const {
+        T sum = 0;
+        for (int i = 0; i < m_values.size(); i++) {
+            sum += m_values[i];
+        }
+
+        return Tensor<T>(std::vector<T>{sum}, std::vector<int>{1});
+    }
+
+    // MATMUL
+    Tensor<T> matmul(Tensor<T>& other) {
+        if (m_shape.size() != 2 || other.m_shape.size() != 2) {
+            throw std::invalid_argument("Matrix multiplication requires 2D tensors");
+        }
+
+        if (m_shape[1] != other.m_shape[0]) {
+            throw std::invalid_argument("Matrix multiplication requires compatible shapes");
+        }
+
+        std::vector<int> new_shape = {m_shape[0], other.m_shape[1]};
+        std::vector<T> new_values(new_shape[0] * new_shape[1], 0);
+
+        for (int i = 0; i < m_shape[0]; i++) {
+            for (int j = 0; j < other.m_shape[1]; j++) {
+                for (int k = 0; k < m_shape[1]; k++) {
+                    new_values[i * new_shape[1] + j] += m_values[i * m_shape[1] + k] * other.m_values[k * other.m_shape[1] + j];
+                }
+            }
+        }
+
+        Tensor<T> result(new_shape, new_values);
+        result.set_leaf(false);
+
+        // figure out wether the parent needs AccumulateGrad
+        setup_accumulate_grad();
+        other.setup_accumulate_grad();
+
+        bool requires_grad = requires_gradient() || other.requires_gradient();
+        result.set_requires_gradient(requires_grad);
+        if (requires_grad) {
+            std::vector<std::shared_ptr<Operator<T>>> next_operators = {get_grad_op(), other.get_grad_op()};
+            
+            std::vector<Tensor<T>> saved_values = { *this, other };
+
+            result.set_grad_op(std::make_shared<MatmulBack<T>>(saved_values, next_operators));
+            
+        }
+
+        return result;            
+    }
+
+    Tensor<T> matmul(Tensor<T>&& other) {
+        return matmul(other);
+    }
+
+    // overload const without gradient graph creation
+    Tensor<T> matmul(const Tensor<T>& other) const {
+        if (m_shape.size() != 2 || other.m_shape.size() != 2) {
+            throw std::invalid_argument("Matrix multiplication requires 2D tensors");
+        }
+
+        if (m_shape[1] != other.m_shape[0]) {
+            throw std::invalid_argument("Matrix multiplication requires compatible shapes");
+        }
+
+        std::vector<int> new_shape = {m_shape[0], other.m_shape[1]};
+        std::vector<T> new_values(new_shape[0] * new_shape[1], 0);
+
+        for (int i = 0; i < m_shape[0]; i++) {
+            for (int j = 0; j < other.m_shape[1]; j++) {
+                for (int k = 0; k < m_shape[1]; k++) {
+                    new_values[i * new_shape[1] + j] += m_values[i * m_shape[1] + k] * other.m_values[k * other.m_shape[1] + j];
+                }
+            }
+        }
+
+        Tensor<T> result(new_shape, new_values);
         result.set_leaf(false);
 
         return result;            
