@@ -57,11 +57,11 @@ int main() {
 
 
     // create a simple network
-    Linear* linear1 = new Linear(3, 500);
+    Linear* linear1 = new Linear(3, 10, Linear::Initializer::Xavier);
     ReLU* act1 = new ReLU();
-    Linear* linear2 = new Linear(500, 50);
+    Linear* linear2 = new Linear(10, 3, Linear::Initializer::Xavier);
     ReLU* act2 = new ReLU();
-    Linear* linear3 = new Linear(50, 1);
+    Linear* linear3 = new Linear(3, 1, Linear::Initializer::Xavier);
     
     Sequential simple_network({linear1, act1, linear2, act2, linear3});
     // // create a smaller network
@@ -108,7 +108,7 @@ int main() {
 
     std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::mse(simple_network.forward(X), Y); };
 
-    SDG sdg(parameters, 0.01);
+    SDG sdg(parameters, 0.001);
 
     // float total_loss = Number::max().value();
     // float prev_loss = 0;

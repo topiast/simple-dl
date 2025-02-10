@@ -39,18 +39,18 @@ Tensor some_linear_function(Number y) {
 
 
 int main() {
-Tensor input({1, 3});
-    input.set_values(0, {1, 2, 3});
-    // create tensor with 1,0,0 values
-    Tensor target({1, 3});
-    target.set_values(0, {1, 0, 0});
+// Tensor input({1, 3});
+//     input.set_values(0, {1, 2, 3});
+//     // create tensor with 1,0,0 values
+//     Tensor target({1, 3});
+//     target.set_values(0, {1, 0, 0});
 
-    std::vector<Number*> variables;
+//     std::vector<Number*> variables;
 
-    for (auto& v : input.get_values()) {
-        variables.push_back(&v);
-        v.set_count_gradient(true);
-    }
+//     for (auto& v : input.get_values()) {
+//         variables.push_back(&v);
+//         v.set_count_gradient(true);
+//     }
     // input.print();
 
     // Number& x = input[0];
