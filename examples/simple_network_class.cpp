@@ -1,6 +1,4 @@
-#include "math/number.h"
-#include "math/old_tensor.h"
-// #include "math/function.h"
+#include "math/tensor.h"
 
 #include "ml/linear.h"
 #include "ml/activation_functions.h"
@@ -12,19 +10,17 @@
 #include <iostream>
 #include <functional>
 
-using Number = sdlm::Number<double>;
-using Tensor = sdlm::Tensor<Number>;
+using Tensor = sdlm::Tensor<double>;
 using Linear = sdl::Linear<double>;
 using Sigmoid = sdl::Sigmoid<double>;
 using ReLU = sdl::ReLU<double>;
 using Sequential = sdl::Sequential<double>;
 using SDG = sdl::SDG<double>;
 using Softmax = sdl::Softmax<double>;
-// using Function = sdlm::Function<double>;
 
 // create some linear function
-// returns a vector of 3 numbers
-Tensor some_linear_function(Number y) {
+// returns a vector of 3 floats
+Tensor some_linear_function(float y) {
     Tensor result;
     result.ones({3});
 
@@ -34,60 +30,21 @@ Tensor some_linear_function(Number y) {
 
 
     return result;
-    
+
 }
 
-
 int main() {
-Tensor input({1, 3});
-    input.set_values(0, {1, 2, 3});
-    // create tensor with 1,0,0 values
-    Tensor target({1, 3});
-    target.set_values(0, {1, 0, 0});
-
-    std::vector<Number*> variables;
-
-    for (auto& v : input.get_values()) {
-        variables.push_back(&v);
-        v.set_count_gradient(true);
-    }
-    // input.print();
-
-    // Number& x = input[0];
-    // (-( (std::exp(input[0]) / (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])))).log() )).backward();
-    // x.debug_print();
-    // std::cout << "softmax: " << std::endl;
-    // Number sum_exp = (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])));
-    // ???
-
-    // Number f = -(target[0] * ( (std::exp(input[0]) / sum_exp).log() ) + target[1] * ( (std::exp(input[1]) / sum_exp).log() ) + target[2] * ( (std::exp(input[2]) / sum_exp).log() ));
-    // auto softmax = input.softmax();
-    // Number f = sdl::cross_entropy(softmax, target);
-    // f.backward();
-    // f.debug_print();
-
-    // variables[0]->debug_print();
-    // variables[1]->debug_print();
-    // variables[2]->debug_print();
-
-    // softmax[0].debug_print();
-    // softmax[1].debug_print();
-    // softmax[2].debug_print();
-
-    // NOTE: Tensor operations break the gradient tracking since the values are copied and the pointers are different
-
-
     //create mock data tensor
     Tensor X, Y;
     Y.ones({3, 3});  // Example tensor with shape 4x3 filled with ones
     X.ones({3, 3});  // Example tensor with shape 4x3 filled with ones
 
-    std::cout << "X shape: " << X.get_shape()[0] << "x" << X.get_shape()[1] << std::endl;
+    std::cout << "X shape: " << X.shape()[0] << "x" << X.shape()[1] << std::endl;
 
 
 
-    for(int i = 0; i < X.get_shape()[0]; i++) {
-        X.set_values(i, some_linear_function(i).get_values());
+    for(int i = 0; i < X.shape()[0]; i++) {
+        X.set_values(i, some_linear_function(i).values());
         // Set the appropriate one-hot vector for each sample
         if (i == 0) {
             Y.set_values(i, {1, 0, 0});
@@ -110,21 +67,21 @@ Tensor input({1, 3});
     ReLU* act1 = new ReLU();
     Linear* linear2 = new Linear(50, 50);
     ReLU* act2 = new ReLU();
-    Linear* linear3 = new Linear(50, 3);  // Update the output shape to match the number of classes
+    Linear* linear3 = new Linear(50, 3);  // Update the output shape to match the double of classes
     Softmax* act3 = new Softmax();
 
     
     Sequential simple_network({linear1, act1, linear2, act2, linear3, act3});
     
-    std::vector<Number*> parameters = simple_network.get_parameters();
+    std::vector<Tensor*> parameters = simple_network.get_parameters();
 
     for (auto& p : parameters) {
-        p->set_count_gradient(true);
+        p->set_requires_gradient(true);
     }
     std::cout << "Parameters size: " << parameters.size() << std::endl;
 
-    // std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::mse(simple_network.forward(X), Y); };
-    std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::cross_entropy(simple_network.forward(X), Y); };
+    // std::function<double()> loss_func = [&simple_network, &X, &Y]() { return sdl::mse(simple_network.forward(X), Y); };
+    std::function<Tensor()> loss_func = [&simple_network, &X, &Y]() { return sdl::cross_entropy(simple_network.forward(X), Y); };
 
     SDG sdg(parameters, 0.015);
 

@@ -3,8 +3,7 @@
 #include <vector>
 #include <iostream>
 
-#include "math/number.h"
-#include "math/old_tensor.h"
+#include "math/tensor.h"
 #include "ml/module.h"
 
 namespace sdl {
@@ -12,38 +11,49 @@ namespace sdl {
 // cross entropy loss
 // input is the output of the model and each row is a vector of probabilities
 template <typename T>
-sdlm::Number<T> cross_entropy(sdlm::Tensor<sdlm::Number<T>>& input, sdlm::Tensor<sdlm::Number<T>>& target) {
-    return -(target * (input.log())).sum() / input.get_shape()[0];
+sdlm::Tensor<T> cross_entropy(sdlm::Tensor<T>& input, sdlm::Tensor<T>& target) {
+    return -(target * (input.log())).sum();// / input.shape()[0];
 }
 template <typename T>
-sdlm::Number<T> cross_entropy(sdlm::Tensor<sdlm::Number<T>>&& input, sdlm::Tensor<sdlm::Number<T>>&& target) {
+sdlm::Tensor<T> cross_entropy(sdlm::Tensor<T>&& input, sdlm::Tensor<T>&& target) {
     return cross_entropy(input, target);
 }
 template <typename T>
-sdlm::Number<T> cross_entropy(sdlm::Tensor<sdlm::Number<T>>& input, sdlm::Tensor<sdlm::Number<T>>&& target) {
+sdlm::Tensor<T> cross_entropy(sdlm::Tensor<T>& input, sdlm::Tensor<T>&& target) {
     return cross_entropy(input, target);
 }
 template <typename T>
-sdlm::Number<T> cross_entropy(sdlm::Tensor<sdlm::Number<T>>&& input, sdlm::Tensor<sdlm::Number<T>>& target) {
+sdlm::Tensor<T> cross_entropy(sdlm::Tensor<T>&& input, sdlm::Tensor<T>& target) {
     return cross_entropy(input, target);
 }
+
+// accuracy
+template <typename T>
+sdlm::Tensor<T> accuracy(sdlm::Tensor<T>& input, sdlm::Tensor<T>& target) {
+    sdlm::Tensor<T> max_vals = input.argmax(1);
+    sdlm::Tensor<T> target_vals = target.argmax(1);
+    return (max_vals == target_vals).sum() / input.shape()[0];
+}
+
+
 
 
 // mean squared error loss
 template <typename T>
-sdlm::Number<T> mse(sdlm::Tensor<sdlm::Number<T>>& input, sdlm::Tensor<sdlm::Number<T>>& target) {
-    return (input - target).pow(2).sum() / input.get_shape()[0];
+sdlm::Tensor<T> mse(sdlm::Tensor<T>& input, sdlm::Tensor<T>& target) {
+    sdlm::Tensor<T> diff = input - target;
+    return (diff^2).sum() / input.shape()[0];
 }
 template <typename T>
-sdlm::Number<T> mse(sdlm::Tensor<sdlm::Number<T>>&& input, sdlm::Tensor<sdlm::Number<T>>&& target) {
+sdlm::Tensor<T> mse(sdlm::Tensor<T>&& input, sdlm::Tensor<T>&& target) {
     return mse(input, target);
 }
 template <typename T>
-sdlm::Number<T> mse(sdlm::Tensor<sdlm::Number<T>>& input, sdlm::Tensor<sdlm::Number<T>>&& target) {
+sdlm::Tensor<T> mse(sdlm::Tensor<T>& input, sdlm::Tensor<T>&& target) {
     return mse(input, target);
 }
 template <typename T>
-sdlm::Number<T> mse(sdlm::Tensor<sdlm::Number<T>>&& input, sdlm::Tensor<sdlm::Number<T>>& target) {
+sdlm::Tensor<T> mse(sdlm::Tensor<T>&& input, sdlm::Tensor<T>& target) {
     return mse(input, target);
 }
 

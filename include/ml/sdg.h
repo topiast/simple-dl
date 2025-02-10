@@ -3,10 +3,10 @@
 #include <vector>
 #include <iostream>
 #include <functional>
+#include <limits>
 
-#include "math/number.h"
-#include "math/old_tensor.h"
-#include "math/function.h"
+#include "math/tensor.h"
+
 
 
 namespace sdl {
@@ -14,18 +14,24 @@ namespace sdl {
 template <typename T>
 class SDG {
 private:
-    std::vector<sdlm::Number<T>*> parameters;
+    std::vector<sdlm::Tensor<T>*> parameters;
     T learning_rate;
     T momentum_factor;
     bool clip_gradients;
     std::vector<T> momentums; 
 
 public:
-    SDG(std::vector<sdlm::Number<T>*> parameters, T learning_rate, T momentum_factor = 0.9, bool clip_gradients = false)
-        : parameters(parameters), learning_rate(learning_rate), momentum_factor(momentum_factor), clip_gradients(clip_gradients), momentums(parameters.size(), 0){
+    SDG(std::vector<sdlm::Tensor<T>*> parameters, T learning_rate, T momentum_factor = 0.9, bool clip_gradients = false)
+        : parameters(parameters), learning_rate(learning_rate), momentum_factor(momentum_factor), clip_gradients(clip_gradients) {
+            // initialize momentums
+            int size = 0;
+            for (auto& p : parameters) {
+                size += p->size();
+            }
+            momentums = std::vector<T>(size, 0);
             // set all parameters to count gradients
             for (auto& p : parameters) {
-                p->set_count_gradient(true);
+                p->set_requires_gradient(true);
             }
     }    
 
@@ -33,15 +39,36 @@ public:
 
         // Update momentums and parameters using momentum
         for (int i = 0; i < parameters.size(); i++) {
-            momentums[i] = momentums[i] * momentum_factor + parameters[i]->gradient();
-            // std::cout << "parameter " << parameters[i] << " gradient: " << gradients[i] << std::endl;
-            if (clip_gradients) {
-                T clipped_momentum = momentums[i] > 1 ? 1 : (momentums[i] < -1 ? -1 : momentums[i]);
-                parameters[i]->no_grad() -= clipped_momentum * learning_rate;
-            } else {
-                parameters[i]->no_grad() -= momentums[i] * learning_rate;
+            auto& p = parameters[i];
+            auto grads = p->gradients();
+            for (int j = 0; j < p->size(); j++) {
+                momentums[i] = momentums[i] * momentum_factor + grads[j];
+                if (clip_gradients) {
+                    T clipped_momentum = momentums[i] > 1 ? 1 : (momentums[i] < -1 ? -1 : momentums[i]);
+                    (*p)[j] -= clipped_momentum * learning_rate;
+                } else {
+                    (*p)[j] -= momentums[i] * learning_rate;
+                }
             }
         }
+
+
+
+
+
+
+
+        //     momentums[i] = momentums[i] * momentum_factor + parameters[i]->gradient();
+        //     // std::cout << "parameter " << parameters[i] << " gradient: " << gradients[i] << std::endl;
+        //     if (clip_gradients) {
+        //         T clipped_momentum = momentums[i] > 1 ? 1 : (momentums[i] < -1 ? -1 : momentums[i]);
+        //         for (int j = 0; j < parameters[i]->gradients().size(); j++) {
+                    
+        //         parameters[i]->gradients() -= clipped_momentum * learning_rate;
+        //     } else { 
+        //         parameters[i]->gradients() -= momentums[i] * learning_rate;
+        //     }
+        // }
 
     }
 
@@ -55,12 +82,12 @@ public:
     //     }
     // }
 
-    void fit_until_convergence(const std::function<sdlm::Number<T>()>& loss_function, const T& threshold, bool print_loss = true) {
+    void fit_until_convergence(const std::function<sdlm::Tensor<T>()>& loss_function, const T& threshold, bool print_loss = true) {
         if (print_loss) {
             std::cout << "Training until convergence with threshold " << threshold << std::endl;
         }
-        T total_loss = sdlm::Number<T>::max().value();
-        sdlm::Number<T> loss = loss_function();
+        T total_loss = std::numeric_limits<T>::max();
+        sdlm::Tensor<T> loss = loss_function();
         T prev_loss = loss.value();
 
         if (print_loss){
@@ -75,7 +102,7 @@ public:
             
             //zero gradients
             for (auto& p : parameters) {
-                p->set_gradient(0);
+                p->zero_grad();
             }
 
             loss = loss_function();

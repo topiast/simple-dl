@@ -4,8 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "math/number.h"
-#include "math/old_tensor.h"
+#include "math/tensor.h"
 
 // using namespace sdlm;
 
@@ -35,9 +34,9 @@ public:
      * @param input The input tensor to the module.
      * @return The output tensor produced by the module.
      */
-    virtual sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) = 0;
+    virtual sdlm::Tensor<T> forward(sdlm::Tensor<T>& input) = 0;
 
-    virtual sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) = 0;
+    virtual sdlm::Tensor<T> forward(sdlm::Tensor<T>&& input) = 0;
 
     
     /**
@@ -48,7 +47,7 @@ public:
      * 
      * @return A vector of pointers to the parameters of the module.
      */
-    virtual std::vector<sdlm::Number<T>*> get_parameters() = 0;
+    virtual std::vector<sdlm::Tensor<T>*> get_parameters() = 0;
 
     /**
      * @brief Retrieves the name of the module.
@@ -67,7 +66,7 @@ public:
      * @param input The input tensor to the module.
      * @return The output tensor produced by the module.
      */
-    sdlm::Tensor<sdlm::Number<T>> operator()(sdlm::Tensor<sdlm::Number<T>>& input) {
+    sdlm::Tensor<T> operator()(sdlm::Tensor<T>& input) {
         return forward(input);
     }
 
@@ -79,11 +78,22 @@ public:
      * 
      * @return A 2D tensor containing the flattened parameters of the module.
      */
-    sdlm::Tensor<sdlm::Number<T>> flatten() {
-        auto parameters = get_parameters();
-        return sdlm::Tensor<sdlm::Number<T>>(parameters, {parameters.size(), 1});
-    }
+    // sdlm::Tensor<T> flatten() { // TODO: figure out if this is needed
+    //     auto parameters = get_parameters();
+    //     return sdlm::Tensor<T>(parameters, {parameters.size(), 1});
+    // }
 
+    /**
+     * @brief Set gradient to zero for all parameters of the module.
+     * 
+     * This function sets the gradient of all parameters of the module to zero.
+     */
+    void zero_grad() {
+        auto parameters = get_parameters();
+        for (auto& p : parameters) {
+            p->zero_grad();
+        }
+    }
 };
     
 } // namespace sdl

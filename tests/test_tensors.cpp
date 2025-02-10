@@ -152,6 +152,43 @@ TEST(TensorTest, ReduceSum) {
 
 }
 
+// Test case for sum operation
+TEST(TensorTest, Sum) {
+    sdlm::Tensor<int> tensor1, result;
+
+    // Create a tensor
+    tensor1.ones({2, 3, 4});  // Example tensor with shape 2x3x4 filled with ones
+
+    tensor1.set_values({0, 0}, {1, 2, 3, 4});
+    tensor1.set_values({0, 1}, {5, 6, 7, 8});
+    tensor1.set_values({0, 2}, {9, 10, 11, 12});
+
+    tensor1.set_values({1, 0}, {13, 14, 15, 16});
+    tensor1.set_values({1, 1}, {17, 18, 19, 20});
+    tensor1.set_values({1, 2}, {21, 22, 23, 24});
+
+    tensor1.set_requires_gradient(true);
+
+    // Perform sum
+    result = tensor1.sum();
+
+    // Check if the resulting shape is as expected
+    std::vector<int> expectedShape = {1};
+    ASSERT_EQ(result.shape(), expectedShape);
+
+    // Check if the resulting values are as expected
+//   [300]
+    int sum = 0;
+    for (int i = 0; i < 24; i++) {
+        sum += i + 1;
+    }
+
+    ASSERT_EQ(result.value(), sum);
+
+    // check that grad operator is not null
+    ASSERT_NE(tensor1.get_grad_op().get(), nullptr);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

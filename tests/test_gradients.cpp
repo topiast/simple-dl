@@ -1,8 +1,6 @@
-// #include "math/old_tensor.h"
-// #include "math/old_tensor.h"
 #include "math/tensor.h"
 
-// #include "ml/loss_functions.h"
+#include "ml/loss_functions.h"
 
 #include <gtest/gtest.h>
 #include <vector>
@@ -555,46 +553,66 @@ TEST(TestGradients, TestFunctionValuesAndGradientsTan) {
     }
 }
 
-// // test cross entropy loss function
-// TEST(TestGradients, TestFunctionValuesAndGradientsCrossEntropy) {
-//     // create tensor with 1,2,3 values
-//     Tensor input({1, 3});
-//     input.set_values(0, {1, 2, 3});
-//     // create tensor with 1,0,0 values
-//     Tensor target({1, 3});
-//     target.set_values(0, {1, 0, 0});
+// test ReLU
+TEST(TestGradients, TestFunctionValuesAndGradientsReLU) {
+    std::vector<Tensor*> variables;
+    Tensor a = rand() % 10;
 
-//     std::vector<Tensor*> variables;
+    variables.push_back(&a);
 
-//     for (auto& v : input.get_values()) {
-//         variables.push_back(&v);
-//         v.set_requires_gradient(true);
-//     }
-//     // input.print();
+    a.set_requires_gradient(true);
 
-//     // Tensor& x = input[0];
-//     // (-( (std::exp(input[0]) / (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])))).log() )).backward();
-//     // x.debug_print();
-//     // std::cout << "softmax: " << std::endl;
-//     // Tensor sum_exp = (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])));
-//     // ???
+    Tensor f = sdlm::relu(a);
+    f.backward();
 
-//     // Tensor f = -(target[0] * ( (std::exp(input[0]) / sum_exp).log() ) + target[1] * ( (std::exp(input[1]) / sum_exp).log() ) + target[2] * ( (std::exp(input[2]) / sum_exp).log() ));
-//     Tensor f = sdl::cross_entropy(input.softmax(), target);
-//     f.backward();
+    float value = a.value() > 0 ? a.value() : 0;
 
-//     // vector of expected function gradients
-//     std::vector<float> expected_gradients = {-0.90996945, 0.24472848, 0.66524094};
-//     // Test values
-//     EXPECT_FLOAT_EQ(f.value(), 2.4076059);
+    for (int i = 0; i < variables.size(); i++) {
+        // Test values
+        EXPECT_FLOAT_EQ(f.value(), value);
 
-//     for (int i = 0; i < variables.size(); i++) {
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(variables[i]->gradient(), a.value() > 0 ? 1 : 0);
+    }
+}
 
-//         // Test gradients
-//         // Adjust these assertions based on the expected gradient values for your function
-//         EXPECT_FLOAT_EQ(variables[i]->gradient(), expected_gradients[i]);
-//     }
-// }
+// test cross entropy loss function
+TEST(TestGradients, TestFunctionValuesAndGradientsCrossEntropy) {
+    // create tensor with 1,2,3 values
+    Tensor input({1, 3});
+    input.set_values(0, {1, 2, 3});
+    // create tensor with 1,0,0 values
+    Tensor target({1, 3});
+    target.set_values(0, {1, 0, 0});
+
+    std::vector<Tensor*> variables;
+
+    input.set_requires_gradient(true);
+    // input.print();
+
+    // Tensor& x = input[0];
+    // (-( (std::exp(input[0]) / (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])))).log() )).backward();
+    // x.debug_print();
+    // std::cout << "softmax: " << std::endl;
+    // Tensor sum_exp = (std::exp(input[0]) + std::exp(input[1] + std::exp(input[2])));
+    // ???
+
+    // Tensor f = -(target[0] * ( (std::exp(input[0]) / sum_exp).log() ) + target[1] * ( (std::exp(input[1]) / sum_exp).log() ) + target[2] * ( (std::exp(input[2]) / sum_exp).log() ));
+    Tensor f = sdl::cross_entropy(input.softmax(), target);
+    f.backward();
+
+    // vector of expected function gradients
+    std::vector<float> expected_gradients = {-0.90996945, 0.24472848, 0.66524094};
+    // Test values
+    EXPECT_FLOAT_EQ(f.value(), 2.4076059);
+
+    for (int i = 0; i < input.size(); i++) {
+        // Test gradients
+        // Adjust these assertions based on the expected gradient values for your function
+        EXPECT_FLOAT_EQ(input.gradients()[i], expected_gradients[i]);
+    }
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -4,8 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "math/number.h"
-#include "math/old_tensor.h"
+#include "math/tensor.h"
 #include "ml/module.h"
 
 namespace sdl {
@@ -19,26 +18,26 @@ class Sequential : public Module<T> {
         public:
 
             Sequential() {}
-
+            // TODO: add validation to the constructors
             Sequential(std::vector<Module<T>*> modules) : modules(modules) {}
 
             Sequential(std::initializer_list<Module<T>*> modules) : modules(modules) {}
 
-            sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>& input) override {
-                sdlm::Tensor<sdlm::Number<T>> output = input;
+            sdlm::Tensor<T> forward(sdlm::Tensor<T>& input) override {
+                sdlm::Tensor<T> output = input;
                 for (auto& module : modules) {
                     output = module->forward(output);
                 }
                 return output;
             }
 
-            sdlm::Tensor<sdlm::Number<T>> forward(sdlm::Tensor<sdlm::Number<T>>&& input) override {
+            sdlm::Tensor<T> forward(sdlm::Tensor<T>&& input) override {
                 return forward(input);
             }
 
 
-            std::vector<sdlm::Number<T>*> get_parameters() override {
-                std::vector<sdlm::Number<T>*> parameters;
+            std::vector<sdlm::Tensor<T>*> get_parameters() override {
+                std::vector<sdlm::Tensor<T>*> parameters;
                 for (auto& module : modules) {
                     auto module_parameters = module->get_parameters();
                     parameters.insert(parameters.end(), module_parameters.begin(), module_parameters.end());

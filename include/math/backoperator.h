@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <memory>
+#include <functional>
 
 namespace sdlm {
 
@@ -26,13 +27,21 @@ public:
         evaluate(x);
     }
 
+    bool requires_grad(const int i) const {
+        if (i >= m_next_operators.size()) {
+            std::cout << "Error: next operator index out of range" << std::endl;
+            return false;
+        }
+        return (m_next_operators[i] != nullptr);
+    }
+
     void next_evaluate(const int i, const Tensor<T>& x) const {
         if (i >= m_next_operators.size()) {
             std::cout << "Error: next operator index out of range" << std::endl;
             return;
         }
         // auto next_operator = m_next_operators[i];
-        if (m_next_operators[i] != nullptr) {
+        if (requires_grad(i)) {
             m_next_operators[i]->evaluate(x);
         } 
     }
@@ -76,11 +85,16 @@ public:
 
     void evaluate(const Tensor<T>& x) const override {
         if (x.shape() != m_variable->shape()) {
+            auto reduced = x.reduce_sum(0);
             // reduce sum the gradient
-            m_variable->set_gradient(m_variable->gradient_tensor() + x.reduce_sum(0));
+            if (reduced.shape() != m_variable->shape()) {
+                std::cout << "Error: AccumulateGrad: reduced gradient shape does not match variable shape" << std::endl;
+                return;
+            }
+            m_variable->set_gradient(m_variable->gradient_tensor() + reduced);
+        } else {
+            m_variable->set_gradient(m_variable->gradient_tensor() + x);
         }
-
-        m_variable->set_gradient(m_variable->gradient_tensor() + x);
     }
 
     void print() const override {
@@ -156,16 +170,48 @@ public:
         const Tensor<T>& b = saved_values[1];
 
         // calculate the gradients
-        Tensor<T> grad_a = gradient * b; // TODO: check if it matters if these have requires_grad set to true
-        Tensor<T> grad_b = gradient * a;
+        if (this->requires_grad(0)) {
+            Tensor<T> grad_a = gradient * b;
+            this->next_evaluate(0, grad_a);
+        }
 
-        // evaluate the next operators
-        this->next_evaluate(0, grad_a);
-        this->next_evaluate(1, grad_b);
+        if (this->requires_grad(1)) {
+            Tensor<T> grad_b = gradient * a;
+            this->next_evaluate(1, grad_b);
+        }
     }
 
     void print() const override {
         std::cout << "MulBack" << std::endl;
+    }
+};
+
+// tensor multiplication with single value tensor
+template <typename T>
+class MulBackScalar : public Operator<T> {
+public:
+    MulBackScalar(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+
+    ~MulBackScalar() = default;
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        const Tensor<T>& a = this->m_saved_values[0];
+        const Tensor<T>& b = this->m_saved_values[1];
+
+        if (this->requires_grad(0)) {
+            Tensor<T> grad_a = gradient * b;
+            this->next_evaluate(0, grad_a);
+        }
+
+        if (this->requires_grad(1)) {
+            Tensor<T> grad_b = (gradient * a).reduce_sum(0);
+            this->next_evaluate(1, grad_b);
+        }
+    }
+
+    void print() const override {
+        std::cout << "MulBackScalar" << std::endl;
     }
 };
 
@@ -183,13 +229,15 @@ public:
         const Tensor<T>& a = saved_values[0];
         const Tensor<T>& b = saved_values[1];
 
-        // calculate the gradients
-        Tensor<T> grad_a = gradient / b; 
-        Tensor<T> grad_b = -gradient * a / (b * b);
+        if (this->requires_grad(0)) {
+            Tensor<T> grad_a = gradient / b;
+            this->next_evaluate(0, grad_a);
+        }
 
-        // evaluate the next operators
-        this->next_evaluate(0, grad_a);
-        this->next_evaluate(1, grad_b);
+        if (this->requires_grad(1)) {
+            Tensor<T> grad_b = -gradient * a / (b * b);
+            this->next_evaluate(1, grad_b);
+        }
     }
 
     void print() const override {
@@ -212,16 +260,45 @@ public:
         const Tensor<T>& b = saved_values[1];
 
         // calculate the gradients
-        Tensor<T> grad_a = gradient * b * a.pow(b - 1); 
-        Tensor<T> grad_b = gradient * a.pow(b) * a.log();
-
-        // evaluate the next operators
-        this->next_evaluate(0, grad_a);
-        this->next_evaluate(1, grad_b);
+        if (this->requires_grad(0)) {
+            Tensor<T> grad_a = gradient * b * pow(a, b - 1);
+            this->next_evaluate(0, grad_a);
+        }
+        if (this->requires_grad(1)) {
+            Tensor<T> grad_b = gradient * pow(a, b) * log(a);
+            this->next_evaluate(1, grad_b);
+        }
     }
 
     void print() const override {
         std::cout << "PowBack" << std::endl;
+    }
+};
+
+// tensor power with single value tensor
+template <typename T>
+class PowBackScalar : public Operator<T> {
+public:
+    PowBackScalar(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators)
+        : Operator<T>(saved_values, next_operators) {}
+
+    ~PowBackScalar() = default;
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        const Tensor<T>& a = this->m_saved_values[0];
+        const Tensor<T>& b = this->m_saved_values[1];
+        if (this->requires_grad(0)) {
+            Tensor<T> grad_a = gradient * b * pow(a, b - 1);
+            this->next_evaluate(0, grad_a);
+        }
+        if (this->requires_grad(1)) {
+            Tensor<T> grad_b = (gradient * pow(a, b) * log(a)).reduce_sum(0);
+            this->next_evaluate(1, grad_b);
+        }
+    }
+
+    void print() const override {
+        std::cout << "PowBackScalar" << std::endl;
     }
 };
 
@@ -234,12 +311,15 @@ public:
     ~SqrtBack() { }
 
     void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
         auto& saved_values = this->m_saved_values;
         // get the saved values
         const Tensor<T>& a = saved_values[0];
 
         // calculate the gradients
-        Tensor<T> grad_a = gradient / (Tensor<T>(2.f) * a.sqrt());
+        Tensor<T> grad_a = gradient / (Tensor<T>(2.f) * (a.sqrt()));
 
         // evaluate the next operators
         this->next_evaluate(0, grad_a);
@@ -259,6 +339,9 @@ public:
     ~LogBack() { }
 
     void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
         auto& saved_values = this->m_saved_values;
         // get the saved values
         const Tensor<T>& a = saved_values[0];
@@ -284,6 +367,9 @@ public:
     ~ExpBack() { }
 
     void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
         auto& saved_values = this->m_saved_values;
         // get the saved values
         const Tensor<T>& a = saved_values[0];
@@ -309,12 +395,16 @@ public:
     ~AbsBack() { }
 
     void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
         auto& saved_values = this->m_saved_values;
         // get the saved values
         const Tensor<T>& a = saved_values[0];
 
+        std::function<T(T)> f = [](T x) { return x > 0 ? 1 : -1; };
         // calculate the gradients
-        Tensor<T> grad_a = gradient * (a > 0.f ? Tensor<T>(1.f) : Tensor<T>(-1.f));
+        Tensor<T> grad_a = gradient * (a.map(f));
 
         // evaluate the next operators
         this->next_evaluate(0, grad_a);
@@ -334,6 +424,10 @@ public:
     ~SinBack() { }
 
     void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
+
         auto& saved_values = this->m_saved_values;
         // get the saved values
         const Tensor<T>& a = saved_values[0];
@@ -359,6 +453,9 @@ public:
     ~CosBack() { }
 
     void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
         auto& saved_values = this->m_saved_values;
         // get the saved values
         const Tensor<T>& a = saved_values[0];
@@ -384,12 +481,15 @@ public:
     ~TanBack() { }
 
     void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
         auto& saved_values = this->m_saved_values;
         // get the saved values
         const Tensor<T>& a = saved_values[0];
 
         // calculate the gradients
-        Tensor<T> grad_a = gradient / a.cos().pow(2.f);
+        Tensor<T> grad_a = gradient / pow(a.cos(), Tensor<T>(2.f));
 
         // evaluate the next operators
         this->next_evaluate(0, grad_a);
@@ -415,12 +515,14 @@ public:
         const Tensor<T>& b = saved_values[1];
 
         // calculate the gradients
-        Tensor<T> grad_a = gradient.matmul(b.transpose());
-        Tensor<T> grad_b = a.transpose().matmul(gradient);
-
-        // evaluate the next operators
-        this->next_evaluate(0, grad_a);
-        this->next_evaluate(1, grad_b);
+        if (this->requires_grad(0)) {
+            Tensor<T> grad_a = gradient.matmul(b.transpose());
+            this->next_evaluate(0, grad_a);
+        }
+        if (this->requires_grad(1)) {
+            Tensor<T> grad_b = a.transpose().matmul(gradient);
+            this->next_evaluate(1, grad_b);
+        }
     }
 
     void print() const override {
@@ -428,5 +530,159 @@ public:
     }
 };
 
+// sum back
+template <typename T>
+class SumBack : public Operator<T> {
+public:
+    SumBack(const std::vector<std::shared_ptr<Operator<T>>>& next_operators, const std::vector<int>& shape) 
+        : Operator<T>(std::vector<Tensor<T>>(), next_operators), m_shape(shape) { }
+    ~SumBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
+        // create a tensor with the same shape as the input
+        Tensor<T> grad(m_shape, gradient.value());
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad);
+    }
+
+    void print() const override {
+        std::cout << "SumBack" << std::endl;
+    }
+private:
+    std::vector<int> m_shape;
+};
+
+// ACTIVATION FUNCTIONS
+
+// relu
+template <typename T>
+class ReluBack : public Operator<T> {
+public:
+    ReluBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~ReluBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        std::function<T(T)> f = [](T x) { return x > 0 ? 1 : 0; };
+        // calculate the gradients
+        Tensor<T> grad_a = gradient * (a.map(f));
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "ReluBack" << std::endl;
+    }
+};
+
+// sigmoid
+template <typename T>
+class SigmoidBack : public Operator<T> {
+public:
+    SigmoidBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~SigmoidBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+        
+        std::function<T(T)> f = [](T x) { return 1 - x; };
+        // calculate the gradients
+        // grad_a = gradient * a.sigmoid() * (1 - a.sigmoid())
+        Tensor<T> grad_a = gradient * a.sigmoid() * (a.sigmoid().map(f));
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "SigmoidBack" << std::endl;
+    }
+};
+
+// softmax along the last dimension
+template <typename T>
+class SoftmaxBack : public Operator<T> {
+public:
+    SoftmaxBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~SoftmaxBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
+        auto& saved_values = this->m_saved_values;
+        const Tensor<T>& a = saved_values[0];
+
+        // Compute softmax of the input
+        Tensor<T> softmax_a = a.softmax();
+
+        // Compute gradient * softmax (element-wise)
+        Tensor<T> s_times_grad = gradient * softmax_a;
+
+        // // Sum along the last dimension (softmax axis) keeping dimensions for broadcasting
+        // Tensor<T> sum_s_times_grad = s_times_grad.reduce_sum(-1, /*keepdims=*/true);
+
+        // Compute final gradient: softmax * (gradient - sum(gradient * softmax))
+        Tensor<T> grad_a = softmax_a + s_times_grad;
+
+        // Propagate gradient to previous operation
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "SoftmaxBack" << std::endl;
+    }
+};
+
+// tanh
+template <typename T>
+class TanhBack : public Operator<T> {
+public:
+    TanhBack(const std::vector<Tensor<T>>& saved_values, const std::vector<std::shared_ptr<Operator<T>>>& next_operators) 
+        : Operator<T>(saved_values, next_operators) { }
+    ~TanhBack() { }
+
+    void evaluate(const Tensor<T>& gradient) const override {
+        if (!this->requires_grad(0)) {
+            return;
+        }
+        auto& saved_values = this->m_saved_values;
+        // get the saved values
+        const Tensor<T>& a = saved_values[0];
+
+        std::function<T(T)> f = [](T x) { return 1 - x * x; };
+
+        // calculate the gradients
+        Tensor<T> tanh_a = a.tanh();
+        // grad_a = gradient * a.tanh() * (1 - a.tanh()^2)
+        Tensor<T> grad_a = gradient * tanh_a * tanh_a.map(f);
+
+        // evaluate the next operators
+        this->next_evaluate(0, grad_a);
+    }
+
+    void print() const override {
+        std::cout << "TanhBack" << std::endl;
+    }
+};
 
 } // namespace sdlm

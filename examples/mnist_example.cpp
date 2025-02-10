@@ -1,5 +1,4 @@
-#include "math/number.h"
-#include "math/old_tensor.h"
+#include "math/tensor.h"
 
 #include "ml/linear.h"
 #include "ml/activation_functions.h"
@@ -11,8 +10,7 @@
 
 #include <iostream>
 
-using Number = sdlm::Number<float>;
-using Tensor = sdlm::Tensor<Number>;
+using Tensor = sdlm::Tensor<float>;
 using Linear = sdl::Linear<float>;
 using Sigmoid = sdl::Sigmoid<float>;
 using Softmax = sdl::Softmax<float>;
@@ -37,12 +35,17 @@ int main(int argc, char** argv) {
     sdl::utils::load_mnist_data(train_images, train_labels, X, Y);
 
     std::cout << "X shape: " << std::endl;
-    X.print_shape();
+    for (int i = 0; i < X.shape().size(); i++) {
+        std::cout << X.shape()[i] << " ";
+    }
+    std::cout << std::endl;
     std::cout << "Y shape: " << std::endl;
-    Y.print_shape();
-
+    for (int i = 0; i < Y.shape().size(); i++) {
+        std::cout << Y.shape()[i] << " ";
+    }
+    std::cout << std::endl;
     // convert Y to one-hot encoding
-    Y = Y.one_hot(10, [](const Number& x) { return static_cast<int>(x.value()); });
+    Y = Y.one_hot(10);
 
     // to visualize the data, we write the first 10 images to file
     // for (int i = 0; i < 10; i++) {
@@ -62,18 +65,34 @@ int main(int argc, char** argv) {
     //     sdl::utils::write_tga_image(filename, X_0);
     // }
 
-    // use only 1 image for training
-    X = X.head(10).reshape({10, 28, 28}).normalize(0, 1);
-    Y = Y.head(10).reshape({10, 10});
+    X = X.reshape({60000, 28, 28}).normalize(0, 1);
+    Y = Y.reshape({60000, 10});
+
+    std::vector<int> indices = X.shuffle_indices();
+    X = X.select_indices(indices, 0);
+    Y = Y.select_indices(indices, 0);
+
+    Tensor X_train = X.head(50000);
+    Tensor y_train = Y.head(50000);
+
+    Tensor X_test = X.tail(10000);
+    Tensor y_test = Y.tail(10000);
+
+    // // use only 1 image for training
+    // Tensor X_train = X.head(100).reshape({100, 28, 28}).normalize(0, 1);
+    // Tensor y_train = Y.head(100).reshape({100, 10});
+
+    // Tensor X_test = X.tail(100).reshape({100, 28, 28}).normalize(0, 1);
+    // Tensor y_test = Y.tail(100).reshape({100, 10});
 
     // create a simple network
 
     Flatten* flatten = new Flatten();
-    Linear* linear1 = new Linear(784, 32);
+    Linear* linear1 = new Linear(784, 128);
     ReLU* act1 = new ReLU();
-    Linear* linear2 = new Linear(32, 16);
+    Linear* linear2 = new Linear(128, 64);
     ReLU* act2 = new ReLU();
-    Linear* linear3 = new Linear(16, 10);
+    Linear* linear3 = new Linear(64, 10);
     Softmax* output = new Softmax();
 
     Sequential simple_network({flatten, linear1, act1, linear2, act2, linear3, output});
@@ -110,33 +129,94 @@ int main(int argc, char** argv) {
     // out.print();
 
     // get parameters
-    std::vector<Number*> parameters = simple_network.get_parameters();
+    std::vector<Tensor*> parameters = simple_network.get_parameters();
 
     std::cout << "Number of parameters: " << parameters.size() << std::endl;
 
     // create loss function
-    std::function<Number()> loss_func = [&simple_network, &X, &Y]() { return sdl::cross_entropy(simple_network.forward(X), Y); };
+    // std::function<Tensor()> loss_func = [&simple_network, &X_train, &y_train]() { return sdl::cross_entropy(simple_network.forward(X_train), y_train); };
 
     // create optimizer
-    SDG sdg(parameters, 0.01, 0.9);
+    SDG sdg(parameters, 0.09, 0.9);
+
+    int epochs = 1;
+    int batch_size = 50;
+    int number_of_batches = X_train.number_of_batches(batch_size);
+    Tensor loss;
+    std::cout << "Number of batches: " << number_of_batches << std::endl;
+    std::cout << "Training for " << epochs << " epochs..." << std::endl;
+    // train the model
+    for (int i = 0; i < epochs; i++) {
+        // std::cout << "Epoch: " << i << std::endl;
+        for (int j = 0; j < number_of_batches; j++) {
+            Tensor batch = X_train.batch(32, j);
+            Tensor target = y_train.batch(32, j);
+            loss = sdl::cross_entropy(simple_network.forward(batch), target);
+            // std::cout << "Epoch: " << i << " Loss: " << loss.value() << std::endl;
+            loss.backward();
+            sdg.step();
+
+            // zero gradients
+            simple_network.zero_grad();
+            // every 10% of batches, print the j
+            if (j % (number_of_batches / 10) == 0) {
+                std::cout << "Epoch: " << i << " Batch: " << j << " Loss: " << loss.value() << std::endl;
+            }
+        }
+        // shuffle the data
+        indices = X_train.shuffle_indices();
+        X_train = X_train.select_indices(indices, 0);
+        y_train = y_train.select_indices(indices, 0);
+    }
 
     // train the model
-    std::cout << "Training..." << std::endl;
+    // std::cout << "Training..." << std::endl;
 
-    sdg.fit_until_convergence(loss_func, 0.0001, true);
+    // sdg.fit_until_convergence(loss_func, 0.001, true);
 
-    // print the output of the model
-    std::cout << "Output: " << std::endl;
-    simple_network.forward(X).print();
+    // std::cout << "Training prediction: " << std::endl;
+    // // print the output of the model
+    // std::cout << "Output: " << std::endl;
+    // simple_network.forward(X_train.head(20)).print();
 
-    // print the target
-    std::cout << "Target: " << std::endl;
-    Y.print();
+    // // print the target
+    // std::cout << "Target: " << std::endl;
+    // y_train.head(20).print();
+
+    // // loss after training
+    // std::cout << "Loss after training: " << std::endl;
+    // std::cout << loss_func() << std::endl;
+
+    Tensor y_pred_train = simple_network.forward(X_train);
 
     // loss after training
-    std::cout << "Loss after training: " << std::endl;
-    std::cout << loss_func() << std::endl;
+    std::cout << "Loss for training data: " << std::endl;
+    std::cout << sdl::cross_entropy(y_pred_train, y_train) << std::endl;
 
+    // accuracy
+    std::cout << "Accuracy: " << std::endl;
+    std::cout << sdl::accuracy(y_pred_train, y_train) << std::endl;
+
+    std::cout << "Testing..." << std::endl;
+
+    // test the model
+    Tensor y_pred = simple_network.forward(X_test);
+
+    // // print the output of the model
+    // std::cout << "Output: " << std::endl;
+    // y_pred.print();
+
+    // // print the target
+    // std::cout << "Target: " << std::endl;
+    // y_test.head(20).print();
+
+    // loss after testing
+    std::cout << "Loss for test data: " << std::endl;
+    std::cout << sdl::cross_entropy(y_pred, y_test) << std::endl;
+
+    // accuracy
+    std::cout << "Accuracy: " << std::endl;
+    std::cout << sdl::accuracy(y_pred, y_test) << std::endl;
 
     return 0;
 }

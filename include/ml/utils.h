@@ -6,8 +6,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "math/number.h"
-#include "math/old_tensor.h"
+#include "math/tensor.h"
 
 namespace sdl {
 
@@ -21,9 +20,9 @@ T reverse_int(T value) {
     return value;
 }
 
-// Function to read MNIST image file into a sdlm::Tensor<Number<T>> 
+// Function to read MNIST image file into a sdlm::Tensor<T> 
 template <typename T>
-sdlm::Tensor<sdlm::Number<T>> read_mnist_image_file(const std::string& filename) {
+sdlm::Tensor<T> read_mnist_image_file(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) {
         std::cout << "Error opening file " << filename << std::endl;
@@ -46,9 +45,11 @@ sdlm::Tensor<sdlm::Number<T>> read_mnist_image_file(const std::string& filename)
 
     std::cout << "Number of images: " << number_of_images << std::endl;
 
-    sdlm::Tensor<sdlm::Number<T>> data({number_of_images, rows, columns});
+    sdlm::Tensor<T> data({number_of_images, rows, columns});
     std::cout << "Data shape: " << std::endl;
-    data.print_shape();
+    for (int i = 0; i < data.shape().size(); i++) {
+        std::cout << data.shape()[i] << " ";
+    }
 
     int progress = 0;
     int total_progress = number_of_images * rows * columns;
@@ -79,9 +80,9 @@ sdlm::Tensor<sdlm::Number<T>> read_mnist_image_file(const std::string& filename)
     return data;
 }
 
-// Function to read MNIST label file into a Tensor of sdlm::Number<T>
+// Function to read MNIST label file into a Tensor of T
 template <typename T>
-sdlm::Tensor<sdlm::Number<T>> read_mnist_label_file(const std::string& filename) {
+sdlm::Tensor<T> read_mnist_label_file(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) {
         std::cout << "Error opening file " << filename << std::endl;
@@ -96,7 +97,7 @@ sdlm::Tensor<sdlm::Number<T>> read_mnist_label_file(const std::string& filename)
     file.read((char*)&number_of_labels, sizeof(number_of_labels));
     number_of_labels = reverse_int(number_of_labels);
 
-    sdlm::Tensor<sdlm::Number<T>> data({number_of_labels});
+    sdlm::Tensor<T> data(std::vector<int>({number_of_labels}));
 
     int progress = 0;
     int total_progress = number_of_labels;
@@ -124,7 +125,7 @@ sdlm::Tensor<sdlm::Number<T>> read_mnist_label_file(const std::string& filename)
 }
 
 template <typename T>
-void load_mnist_data(const std::string& image_filename, const std::string& label_filename, sdlm::Tensor<sdlm::Number<T>>& images, sdlm::Tensor<sdlm::Number<T>>& labels) {
+void load_mnist_data(const std::string& image_filename, const std::string& label_filename, sdlm::Tensor<T>& images, sdlm::Tensor<T>& labels) {
     std::cout << "Loading MNIST images from " << image_filename << std::endl;
     images = read_mnist_image_file<T>(image_filename);
     std::cout << "Loading MNIST labels from " << label_filename << std::endl;
@@ -132,15 +133,15 @@ void load_mnist_data(const std::string& image_filename, const std::string& label
 }
 
 template <typename T>
-void write_tga_image(const std::string& filename, sdlm::Tensor<sdlm::Number<T>>& image) {
+void write_tga_image(const std::string& filename, sdlm::Tensor<T>& image) {
     // check if image is 2D
-    if (image.get_shape().size() != 2) {
+    if (image.shape().size() != 2) {
         std::cout << "Error: image must be 2D" << std::endl;
         exit(1);
     }
 
     // save image to file
-    auto& shape = image.get_shape();
+    auto& shape = image.shape();
     int width = shape[0];
     int height = shape[1];
 

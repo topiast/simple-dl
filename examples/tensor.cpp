@@ -1,5 +1,3 @@
-// #include "math/number.h"
-// #include "math/function.h"
 #include "math/tensor.h"
 #include <iostream>
 #include <vector>
