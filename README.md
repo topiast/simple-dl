@@ -2,8 +2,20 @@
 
 This is a simple project to teach myself some of the concepts of deep learning. The goal is to create a simple library for dl completely from scratch. 
 
-The current implementation computes the gradients very inefficiently and it is not optimized in any way.
-
+## Features
+- [x] Tensors with basic operations and autograd
+- [x] Linear and Sequential models
+- [x] ReLU, Softmax, and Sigmoid activation functions
+- [x] MNIST dataset loader
+- [x] SDG with momentum optimizer
+- [x] examples for training a linear function, XOR function, and MNIST dataset
+- [ ] Convolutional layers
+- [ ] RNN layers
+- [ ] LSTM layers
+- [ ] GRU layers
+- [ ] Batch normalization
+- [ ] Dropout
+etc.
 ## Example
 
 ### Linear function training example
