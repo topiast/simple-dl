@@ -44,6 +44,20 @@ target_link_libraries(test_gradients PRIVATE math GTest::GTest GTest::Main)
 target_link_libraries(test_tensors PRIVATE math GTest::GTest GTest::Main)
 # target_link_libraries(test_linear_model PRIVATE math GTest::GTest GTest::Main)
 
+# --- OpenMP Setup ---
+find_package(OpenMP REQUIRED)
+if(OpenMP_CXX_FOUND)
+    # Apply OpenMP flags to all executables that require it
+    set_target_properties(gradients tensor simple_network mnist_example simple_network_xor simple_network_class
+        PROPERTIES COMPILE_OPTIONS "${OpenMP_CXX_FLAGS}"
+        LINK_FLAGS "${OpenMP_CXX_LIBRARIES}")
+    
+    # If you have test executables, apply OpenMP to them as well
+    set_target_properties(test_gradients test_tensors
+        PROPERTIES COMPILE_OPTIONS "${OpenMP_CXX_FLAGS}"
+        LINK_FLAGS "${OpenMP_CXX_LIBRARIES}")
+endif()
+
 # Add the test to CTest
 add_test(
     NAME test_gradients

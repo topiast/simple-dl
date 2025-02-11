@@ -399,11 +399,7 @@ class Tensor {
             }
             result.m_shape.push_back(m_shape[m_shape.size() - 2] * m_shape[m_shape.size() - 1]);
             
-            // copy data each element at a time
-            result.m_values = std::vector<T>(size());
-            for (int i = 0; i < size(); ++i) {
-                result.m_values[i] = m_values[i];
-            }
+            result.m_values = m_values;
 
             return result;
         }
@@ -416,6 +412,7 @@ class Tensor {
             Tensor result;
             result.zeros({m_shape[1], m_shape[0]});
 
+            #pragma omp parallel for if(m_values.size() > 2000)
             for (size_t i = 0; i < m_shape[0]; ++i) {
                 for (size_t j = 0; j < m_shape[1]; ++j) {
                     result.m_values[j * m_shape[0] + i] = m_values[i * m_shape[1] + j];
@@ -433,6 +430,7 @@ class Tensor {
             Tensor result;
             result.zeros({m_shape[1], m_shape[0]});
 
+            #pragma omp parallel for if(m_values.size() > 2000) 
             for (size_t i = 0; i < m_shape[0]; ++i) {
                 for (size_t j = 0; j < m_shape[1]; ++j) {
                     result.m_values[j * m_shape[0] + i] = m_values[i * m_shape[1] + j];
@@ -791,6 +789,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] == rhs.m_values[i];
         }
@@ -804,6 +803,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] != rhs.m_values[i];
         }
@@ -827,6 +827,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] > rhs.m_values[i];
         }
@@ -836,6 +837,7 @@ class Tensor {
 
     Tensor<T> operator>(const T& rhs) const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] > rhs;
         }
@@ -850,6 +852,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] < rhs.m_values[i];
         }
@@ -859,6 +862,7 @@ class Tensor {
 
     Tensor<T> operator<(const T& rhs) const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] < rhs;
         }
@@ -873,6 +877,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] >= rhs.m_values[i];
         }
@@ -882,6 +887,7 @@ class Tensor {
 
     Tensor<T> operator>=(const T& rhs) const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] >= rhs;
         }
@@ -896,6 +902,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] <= rhs.m_values[i];
         }
@@ -905,6 +912,7 @@ class Tensor {
 
     Tensor<T> operator<=(const T& rhs) const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] <= rhs;
         }
@@ -915,6 +923,7 @@ class Tensor {
     // map function
     Tensor<T> map(std::function<T(T)> func) const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = func(m_values[i]);
         }
@@ -969,6 +978,7 @@ class Tensor {
     // RELU
     Tensor<T> relu() {
         Tensor<T> result(m_shape);
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             result.m_values[i] = std::max(m_values[i], T(0));
         }
@@ -993,6 +1003,7 @@ class Tensor {
 
     Tensor<T> relu() const {
         Tensor<T> result(m_shape);
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             result.m_values[i] = std::max(m_values[i], T(0));
         }
@@ -1011,7 +1022,7 @@ class Tensor {
             for (int j = 0; j < m_shape.back(); j++) {
                 sum += std::exp(m_values[i + j]);
             }
-
+            # pragma omp parallel for if(m_shape.back() > 2000)
             for (int j = 0; j < m_shape.back(); j++) {
                 result.m_values[i + j] = std::exp(m_values[i + j]) / sum;
             }
@@ -1043,7 +1054,7 @@ class Tensor {
             for (int j = 0; j < m_shape.back(); j++) {
                 sum += std::exp(m_values[i + j]);
             }
-
+            # pragma omp parallel for if(m_shape.back() > 2000)
             for (int j = 0; j < m_shape.back(); j++) {
                 result.m_values[i + j] = std::exp(m_values[i + j]) / sum;
             }
@@ -1059,6 +1070,7 @@ class Tensor {
     // SIGMOID
     Tensor<T> sigmoid() {
         Tensor<T> result(m_shape);
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             result.m_values[i] = 1 / (1 + std::exp(-m_values[i]));
         }
@@ -1083,6 +1095,7 @@ class Tensor {
 
     Tensor<T> sigmoid() const {
         Tensor<T> result(m_shape);
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             result.m_values[i] = 1 / (1 + std::exp(-m_values[i]));
         }
@@ -1095,6 +1108,7 @@ class Tensor {
     // TANH
     Tensor<T> tanh() {
         Tensor<T> result(m_shape);
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             result.m_values[i] = std::tanh(m_values[i]);
         }
@@ -1119,6 +1133,7 @@ class Tensor {
 
     Tensor<T> tanh() const {
         Tensor<T> result(m_shape);
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             result.m_values[i] = std::tanh(m_values[i]);
         }
@@ -1302,6 +1317,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] + rhs.m_values[i];
         }
@@ -1335,6 +1351,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] + other.m_values[i];
         }
@@ -1385,6 +1402,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] - rhs.m_values[i];
         }
@@ -1418,6 +1436,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = m_values[i] - other.m_values[i];
         }
@@ -1431,6 +1450,7 @@ class Tensor {
     // UNARY MINUS
     Tensor<T> operator-() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = -m_values[i];
         }
@@ -1471,6 +1491,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             
             new_values[i] = m_values[i] * other.m_values[i];
@@ -1510,6 +1531,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             
             new_values[i] = m_values[i] * other.m_values[i];
@@ -1528,6 +1550,7 @@ class Tensor {
         }
         T scalar = other.m_values[0];
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (size_t i = 0; i < m_values.size(); ++i) {
             new_values[i] = m_values[i] * scalar;
         }
@@ -1560,6 +1583,7 @@ class Tensor {
         }
         T scalar = other.m_values[0];
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (size_t i = 0; i < m_values.size(); ++i) {
             new_values[i] = m_values[i] * scalar;
         }
@@ -1606,6 +1630,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             if (other.m_values[i] == 0) {
                 throw std::invalid_argument("Error: division by zero");
@@ -1645,6 +1670,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             if (other.m_values[i] == 0) {
                 throw std::invalid_argument("Error: division by zero");
@@ -1665,6 +1691,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::pow(m_values[i], other.m_values[i]);
         }
@@ -1700,6 +1727,7 @@ class Tensor {
         }
 
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::pow(m_values[i], other.m_values[i]);
         }
@@ -1715,6 +1743,7 @@ class Tensor {
     Tensor<T> pow_scalar(Tensor<T>& other) {
         T exponent = other.m_values[0];
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (size_t i = 0; i < m_values.size(); ++i) {
             new_values[i] = std::pow(m_values[i], exponent);
         }
@@ -1744,6 +1773,7 @@ class Tensor {
     Tensor<T> pow_scalar(const Tensor<T>& other) const {
         T exponent = other.m_values[0];
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (size_t i = 0; i < m_values.size(); ++i) {
             new_values[i] = std::pow(m_values[i], exponent);
         }
@@ -1790,6 +1820,7 @@ class Tensor {
     // SQRT
     Tensor<T> sqrt() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             if (m_values[i] < 0) {
                 throw std::invalid_argument("Error: square root of negative number");
@@ -1816,6 +1847,7 @@ class Tensor {
 
     Tensor<T> sqrt() const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             if (m_values[i] < 0) {
                 throw std::invalid_argument("Error: square root of negative number");
@@ -1832,6 +1864,7 @@ class Tensor {
     // LOG
     Tensor<T> log() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             if (m_values[i] <= 0) {
                 throw std::invalid_argument("Error: log of non-positive number");
@@ -1858,6 +1891,7 @@ class Tensor {
 
     Tensor<T> log() const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             if (m_values[i] <= 0) {
                 throw std::invalid_argument("Error: log of non-positive number");
@@ -1874,6 +1908,7 @@ class Tensor {
     // EXP
     Tensor<T> exp() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::exp(m_values[i]);
         }
@@ -1897,6 +1932,7 @@ class Tensor {
 
     Tensor<T> exp() const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::exp(m_values[i]);
         }
@@ -1910,6 +1946,7 @@ class Tensor {
     // ABS
     Tensor<T> abs() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::abs(m_values[i]);
         }
@@ -1933,6 +1970,7 @@ class Tensor {
 
     Tensor<T> abs() const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::abs(m_values[i]);
         }
@@ -1947,6 +1985,7 @@ class Tensor {
     // SIN
     Tensor<T> sin() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::sin(m_values[i]);
         }
@@ -1970,6 +2009,7 @@ class Tensor {
 
     Tensor<T> sin() const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::sin(m_values[i]);
         }
@@ -1983,6 +2023,7 @@ class Tensor {
     // COS
     Tensor<T> cos() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::cos(m_values[i]);
         }
@@ -2006,6 +2047,7 @@ class Tensor {
 
     Tensor<T> cos() const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::cos(m_values[i]);
         }
@@ -2019,6 +2061,7 @@ class Tensor {
     // TAN
     Tensor<T> tan() {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::tan(m_values[i]);
         }
@@ -2042,6 +2085,7 @@ class Tensor {
 
     Tensor<T> tan() const {
         std::vector<T> new_values(m_values.size());
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_values.size(); i++) {
             new_values[i] = std::tan(m_values[i]);
         }
@@ -2101,6 +2145,7 @@ class Tensor {
         std::vector<int> new_shape = {m_shape[0], other.m_shape[1]};
         std::vector<T> new_values(new_shape[0] * new_shape[1], 0);
 
+        #pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_shape[0]; i++) {
             for (int j = 0; j < other.m_shape[1]; j++) {
                 for (int k = 0; k < m_shape[1]; k++) {
@@ -2147,6 +2192,7 @@ class Tensor {
         std::vector<int> new_shape = {m_shape[0], other.m_shape[1]};
         std::vector<T> new_values(new_shape[0] * new_shape[1], 0);
 
+        # pragma omp parallel for if(m_values.size() > 2000)
         for (int i = 0; i < m_shape[0]; i++) {
             for (int j = 0; j < other.m_shape[1]; j++) {
                 for (int k = 0; k < m_shape[1]; k++) {
