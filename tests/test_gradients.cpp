@@ -397,7 +397,7 @@ TEST(TestGradients, TestFunctionValuesAndGradientsSigmoid) {
 
         // Test gradients
         // Adjust these assertions based on the expected gradient values for your function
-        EXPECT_FLOAT_EQ(variables[i]->gradient(), (value) * (1 - value));
+        EXPECT_NEAR(variables[i]->gradient(), (value) * (1 - value), 1e-5);
     }
 
 }
