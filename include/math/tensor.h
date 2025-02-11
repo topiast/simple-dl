@@ -284,10 +284,14 @@ class Tensor {
             return Tensor<T>(new_shape, std::vector<T>(m_values.begin() + start * m_strides[axis], m_values.begin() + end * m_strides[axis]));
         }
 
-        std::vector<int> shuffle_indices() const {
-            std::vector<int> indices(m_shape[0]);
+        std::vector<int> shuffle_indices() {
+            std::vector<int> indices(m_shape[0]);  
             std::iota(indices.begin(), indices.end(), 0);
-            std::random_shuffle(indices.begin(), indices.end());
+            
+            std::random_device rd;
+            std::mt19937 g(rd()); // Mersenne Twister RNG
+            std::shuffle(indices.begin(), indices.end(), g); // Use std::shuffle
+            
             return indices;
         }
 

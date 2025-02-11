@@ -116,7 +116,7 @@ int main() {
     // vector of expected function gradients
     std::vector<float> expected_gradients = {-0.90996945, 0.24472848, 0.66524094};
     // Test values
-    if (f.value() != 2.4076059) {
+    if (f.value() != 2.4076059f) {
         std::cout << "Expected value: 2.4076059" << std::endl;
         std::cout << "Actual value: " << f.value() << std::endl;
     } else {
