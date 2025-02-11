@@ -63,7 +63,7 @@ Given the following network:
     Sequential simple_network({flatten, linear1, act1, linear2, act2, linear3, output});
 ```
 
-The following graph is obtained when training the above model to a single data point from the MNIST dataset:
+The following graph is obtained when training the above model 50 000 images of hand written digits (MNIST dataset):
 ![graph](assets/example_training_mnist.png)
 This example was trained for 20 epochs with a batch size of 50 and a learning rate of 0.001. It reached an accuracy of 0.99 on the test set.
 
